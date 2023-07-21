@@ -11,6 +11,8 @@ public:
 	idx_t row_index;
 	bool new_row;
 	DataChunk input_chunk;
+	idx_t ord_index = 1;
+	bool ord_reset = false;
 };
 
 class TableInOutGlobalState : public GlobalOperatorState {
@@ -52,6 +54,18 @@ unique_ptr<GlobalOperatorState> PhysicalTableInOutFunction::GetGlobalOperatorSta
 	return std::move(result);
 }
 
+void PhysicalTableInOutFunction::PrepareOrdinality(DataChunk &chunk, idx_t &ord_index, bool &ord_reset) const {
+	idx_t ordinality = chunk.size();
+	if (ordinality > 0) {
+		if (ord_reset) {
+			ord_index = 1;
+			ord_reset = false;
+		}
+		idx_t ordinality_column = column_ids.size() - 1;
+		chunk.data[ordinality_column].Sequence(ord_index,1, ordinality);
+	}
+}
+
 OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
                                                        GlobalOperatorState &gstate_p, OperatorState &state_p) const {
 	auto &gstate = gstate_p.Cast<TableInOutGlobalState>();
@@ -59,7 +73,9 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	if (projected_input.empty()) {
 		// straightforward case - no need to project input
-		return function.in_out_function(context, data, input, chunk);
+		duckdb::OperatorResultType tmp = function.in_out_function(context, data, input, chunk);
+		PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
+		return tmp;
 	}
 	// when project_input is set we execute the input function row-by-row
 	if (state.new_row) {
@@ -79,6 +95,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		state.input_chunk.SetCardinality(1);
 		state.row_index++;
 		state.new_row = false;
+		state.ord_reset = true;
 	}
 	// set up the output data in "chunk"
 	D_ASSERT(chunk.ColumnCount() > projected_input.size());
@@ -90,6 +107,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		ConstantVector::Reference(chunk.data[target_idx], input.data[source_idx], state.row_index - 1, 1);
 	}
 	auto result = function.in_out_function(context, data, state.input_chunk, chunk);
+	PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
 	if (result == OperatorResultType::FINISHED) {
 		return result;
 	}
@@ -97,6 +115,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		// we finished processing this row: move to the next row
 		state.new_row = true;
 	}
+	state.ord_index += chunk.size();
 	return OperatorResultType::HAVE_MORE_OUTPUT;
 }
 

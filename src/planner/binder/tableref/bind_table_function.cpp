@@ -151,6 +151,9 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			}
 		}
 		bind_data = table_function.bind(context, bind_input, return_types, return_names);
+		// this is only a hacky temporary solution
+		return_types.push_back(duckdb::LogicalType::INTEGER);
+		return_names.push_back("ordinality");
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();
 			arrow_bind.external_dependency = std::move(external_dependency);

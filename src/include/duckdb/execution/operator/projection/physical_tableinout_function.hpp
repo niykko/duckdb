@@ -23,6 +23,8 @@ public:
 	                           unique_ptr<FunctionData> bind_data_p, vector<column_t> column_ids_p,
 	                           idx_t estimated_cardinality, vector<column_t> projected_input);
 
+	void PrepareOrdinality(DataChunk &chunk, idx_t &ord_index, bool &ord_reset) const;
+
 public:
 	unique_ptr<OperatorState> GetOperatorState(ExecutionContext &context) const override;
 	unique_ptr<GlobalOperatorState> GetGlobalOperatorState(ClientContext &context) const override;
