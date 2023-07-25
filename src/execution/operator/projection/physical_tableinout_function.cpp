@@ -107,7 +107,9 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		ConstantVector::Reference(chunk.data[target_idx], input.data[source_idx], state.row_index - 1, 1);
 	}
 	auto result = function.in_out_function(context, data, state.input_chunk, chunk);
-	PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
+	if (function.with_ordinality) {
+		PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
+	}
 	if (result == OperatorResultType::FINISHED) {
 		return result;
 	}
