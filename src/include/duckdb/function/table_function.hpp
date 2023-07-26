@@ -278,8 +278,9 @@ public:
 	bool filter_prune;
 	//! Additional function info, passed to the bind
 	shared_ptr<TableFunctionInfo> function_info;
-	bool with_ordinality = false;
 	//! used for WITH ORDINALITY
+	bool with_ordinality = false;
+
 
 	DUCKDB_API bool Equal(const TableFunction &rhs) const;
 };

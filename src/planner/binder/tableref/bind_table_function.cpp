@@ -152,8 +152,8 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 		}
 		bind_data = table_function.bind(context, bind_input, return_types, return_names);
 		if (table_function.with_ordinality) {
-			return_types.push_back(duckdb::LogicalType::INTEGER);
-			return_names.push_back("Ordinality");
+			return_types.emplace_back(duckdb::LogicalType::INTEGER);
+			return_names.emplace_back("Ordinality");
 		}
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();
