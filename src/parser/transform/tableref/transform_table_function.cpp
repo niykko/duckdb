@@ -1,7 +1,7 @@
 #include "duckdb/common/exception.hpp"
 #include "duckdb/parser/tableref/table_function_ref.hpp"
 #include "duckdb/parser/transformer.hpp"
-
+#include <algorithm>
 namespace duckdb {
 
 unique_ptr<TableRef> Transformer::TransformRangeFunction(duckdb_libpgquery::PGRangeFunction &root) {
@@ -24,11 +24,21 @@ unique_ptr<TableRef> Transformer::TransformRangeFunction(duckdb_libpgquery::PGRa
 	}
 	// transform the function call
 	auto result = make_uniq<TableFunctionRef>();
-	result->with_ordinality = root.ordinality;
 	switch (call_tree->type) {
 	case duckdb_libpgquery::T_PGFuncCall: {
 		auto func_call = PGPointerCast<duckdb_libpgquery::PGFuncCall>(call_tree.get());
 		result->function = TransformFuncCall(*func_call);
+		std::string function_name = PGPointerCast<duckdb_libpgquery::PGValue>(func_call->funcname->head->data.ptr_value)->val.str;
+		// temporary, ugly placeholder
+		std::vector<std::string> allowed_functions{"unnest"};
+		if (root.ordinality) {
+			if (!(std::find(allowed_functions.begin(), allowed_functions.end(), function_name) != allowed_functions.end())) {
+				throw NotImplementedException("WITH ORDINALITY not implemented for " + function_name);
+			} else {
+				result->with_ordinality = root.ordinality;
+			}
+		}
+
 		result->query_location = func_call->location;
 		break;
 	}
