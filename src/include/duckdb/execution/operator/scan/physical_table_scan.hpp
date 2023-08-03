@@ -75,6 +75,7 @@ public:
 	}
 
 	double GetProgress(ClientContext &context, GlobalSourceState &gstate) const override;
+	void PrepareOrdinality(DataChunk &chunk, idx_t &ord_index) const;
 };
 
 } // namespace duckdb
