@@ -100,6 +100,7 @@ struct ReadCSVData : public BaseCSVData {
 	//! Reader bind data
 	MultiFileReaderBindData reader_bind;
 	vector<ColumnInfo> column_info;
+	bool with_ordinality = false;
 
 	void Initialize(unique_ptr<BufferedCSVReader> &reader) {
 		this->initial_reader = std::move(reader);
