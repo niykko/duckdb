@@ -54,7 +54,6 @@ public:
 
 	unique_ptr<LocalTableFunctionState> local_state;
 	idx_t ord_index = 1;
-	bool ord_reset = false;
 };
 
 unique_ptr<LocalSourceState> PhysicalTableScan::GetLocalSourceState(ExecutionContext &context,

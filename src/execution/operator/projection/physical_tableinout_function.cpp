@@ -55,13 +55,13 @@ unique_ptr<GlobalOperatorState> PhysicalTableInOutFunction::GetGlobalOperatorSta
 }
 
 void PhysicalTableInOutFunction::PrepareOrdinality(DataChunk &chunk, idx_t &ord_index, bool &ord_reset) const {
-	idx_t ordinality = chunk.size();
+	const idx_t ordinality = chunk.size();
 	if (ordinality > 0) {
 		if (ord_reset) {
 			ord_index = 1;
 			ord_reset = false;
 		}
-		idx_t ordinality_column = column_ids.size() - 1;
+		const idx_t ordinality_column = column_ids.size() - 1;
 		chunk.data[ordinality_column].Sequence(ord_index,1, ordinality);
 	}
 }
@@ -73,9 +73,9 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	if (projected_input.empty()) {
 		// straightforward case - no need to project input
-		duckdb::OperatorResultType tmp = function.in_out_function(context, data, input, chunk);
+		duckdb::OperatorResultType result = function.in_out_function(context, data, input, chunk);
 		PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
-		return tmp;
+		return result;
 	}
 	// when project_input is set we execute the input function row-by-row
 	if (state.new_row) {
