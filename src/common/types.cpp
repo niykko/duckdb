@@ -4,10 +4,8 @@
 #include "duckdb/catalog/catalog_search_path.hpp"
 #include "duckdb/catalog/default/default_types.hpp"
 #include "duckdb/common/exception.hpp"
-#include "duckdb/common/field_writer.hpp"
 #include "duckdb/common/limits.hpp"
 #include "duckdb/common/operator/comparison_operators.hpp"
-#include "duckdb/common/serializer.hpp"
 #include "duckdb/common/string_util.hpp"
 #include "duckdb/common/types/decimal.hpp"
 #include "duckdb/common/types/hash.hpp"
@@ -24,9 +22,9 @@
 #include "duckdb/parser/keyword_helper.hpp"
 #include "duckdb/parser/parser.hpp"
 #include "duckdb/common/extra_type_info.hpp"
-#include "duckdb/common/serializer/format_deserializer.hpp"
+#include "duckdb/common/serializer/deserializer.hpp"
 #include "duckdb/common/enum_util.hpp"
-#include "duckdb/common/serializer/format_serializer.hpp"
+#include "duckdb/common/serializer/serializer.hpp"
 #include "duckdb/catalog/catalog_entry/type_catalog_entry.hpp"
 #include <cmath>
 
@@ -395,7 +393,15 @@ string LogicalType::ToString() const {
 		return StringUtil::Format("DECIMAL(%d,%d)", width, scale);
 	}
 	case LogicalTypeId::ENUM: {
-		return KeywordHelper::WriteOptionallyQuoted(EnumType::GetTypeName(*this));
+		string ret = "ENUM(";
+		for (idx_t i = 0; i < EnumType::GetSize(*this); i++) {
+			if (i > 0) {
+				ret += ", ";
+			}
+			ret += KeywordHelper::WriteQuoted(EnumType::GetString(*this, i).GetString(), '\'');
+		}
+		ret += ")";
+		return ret;
 	}
 	case LogicalTypeId::USER: {
 		return KeywordHelper::WriteOptionallyQuoted(UserType::GetTypeName(*this));
@@ -919,7 +925,24 @@ LogicalType LogicalType::AGGREGATE_STATE(aggregate_state_t state_type) { // NOLI
 //===--------------------------------------------------------------------===//
 // Map Type
 //===--------------------------------------------------------------------===//
-LogicalType LogicalType::MAP(const LogicalType &child) {
+LogicalType LogicalType::MAP(const LogicalType &child_p) {
+	D_ASSERT(child_p.id() == LogicalTypeId::STRUCT);
+	auto &children = StructType::GetChildTypes(child_p);
+	D_ASSERT(children.size() == 2);
+
+	// We do this to enforce that for every MAP created, the keys are called "key"
+	// and the values are called "value"
+
+	// This is done because for Vector the keys of the STRUCT are used in equality checks.
+	// Vector::Reference will throw if the types don't match
+	child_list_t<LogicalType> new_children(2);
+	new_children[0] = children[0];
+	new_children[0].first = "key";
+
+	new_children[1] = children[1];
+	new_children[1].first = "value";
+
+	auto child = LogicalType::STRUCT(std::move(new_children));
 	auto info = make_shared<ListTypeInfo>(child);
 	return LogicalType(LogicalTypeId::MAP, std::move(info));
 }
@@ -995,34 +1018,12 @@ LogicalType LogicalType::USER(const string &user_type_name) {
 //===--------------------------------------------------------------------===//
 // Enum Type
 //===--------------------------------------------------------------------===//
-void EnumType::Serialize(FieldWriter &writer, const ExtraTypeInfo &type_info, bool serialize_internals) {
-	D_ASSERT(type_info.type == ExtraTypeInfoType::ENUM_TYPE_INFO);
-	auto &enum_info = type_info.Cast<EnumTypeInfo>();
-	// Store Schema Name
-	writer.WriteString(enum_info.GetSchemaName());
-	// Store Enum Name
-	writer.WriteString(enum_info.GetEnumName());
-	// Store If we are serializing the internals
-	writer.WriteField<bool>(serialize_internals);
-	if (serialize_internals) {
-		// We must serialize the internals
-		auto dict_size = enum_info.GetDictSize();
-		// Store Dictionary Size
-		writer.WriteField<uint32_t>(dict_size);
-		// Store Vector Order By Insertion
-		((Vector &)enum_info.GetValuesInsertOrder()).Serialize(dict_size, writer.GetSerializer()); // NOLINT - FIXME
-	}
-}
-
-const string &EnumType::GetTypeName(const LogicalType &type) {
-	D_ASSERT(type.id() == LogicalTypeId::ENUM);
-	auto info = type.AuxInfo();
-	D_ASSERT(info);
-	return info->Cast<EnumTypeInfo>().GetEnumName();
+LogicalType LogicalType::ENUM(Vector &ordered_data, idx_t size) {
+	return EnumTypeInfo::CreateType(ordered_data, size);
 }
 
 LogicalType LogicalType::ENUM(const string &enum_name, Vector &ordered_data, idx_t size) {
-	return EnumTypeInfo::CreateType(enum_name, ordered_data, size);
+	return LogicalType::ENUM(ordered_data, size);
 }
 
 const string EnumType::GetValue(const Value &val) {
@@ -1045,27 +1046,6 @@ idx_t EnumType::GetSize(const LogicalType &type) {
 	return info->Cast<EnumTypeInfo>().GetDictSize();
 }
 
-void EnumType::SetCatalog(LogicalType &type, optional_ptr<TypeCatalogEntry> catalog_entry) {
-	auto info = type.AuxInfo();
-	if (!info) {
-		return;
-	}
-	((ExtraTypeInfo &)*info).catalog_entry = catalog_entry;
-}
-
-optional_ptr<TypeCatalogEntry> EnumType::GetCatalog(const LogicalType &type) {
-	auto info = type.AuxInfo();
-	if (!info) {
-		return nullptr;
-	}
-	return info->catalog_entry;
-}
-
-string EnumType::GetSchemaName(const LogicalType &type) {
-	auto catalog_entry = EnumType::GetCatalog(type);
-	return catalog_entry ? catalog_entry->schema.name : "";
-}
-
 PhysicalType EnumType::GetPhysicalType(const LogicalType &type) {
 	D_ASSERT(type.id() == LogicalTypeId::ENUM);
 	auto aux_info = type.AuxInfo();
@@ -1081,31 +1061,6 @@ PhysicalType EnumType::GetPhysicalType(const LogicalType &type) {
 
 // the destructor needs to know about the extra type info
 LogicalType::~LogicalType() {
-}
-
-void LogicalType::Serialize(Serializer &serializer) const {
-	FieldWriter writer(serializer);
-	writer.WriteField<LogicalTypeId>(id_);
-	ExtraTypeInfo::Serialize(type_info_.get(), writer);
-	writer.Finalize();
-}
-
-void LogicalType::SerializeEnumType(Serializer &serializer) const {
-	FieldWriter writer(serializer);
-	writer.WriteField<LogicalTypeId>(id_);
-	writer.WriteField<ExtraTypeInfoType>(type_info_->type);
-	EnumType::Serialize(writer, *type_info_, true);
-	writer.WriteString(type_info_->alias);
-	writer.Finalize();
-}
-
-LogicalType LogicalType::Deserialize(Deserializer &source) {
-	FieldReader reader(source);
-	auto id = reader.ReadRequired<LogicalTypeId>();
-	auto info = ExtraTypeInfo::Deserialize(reader);
-	reader.Finalize();
-
-	return LogicalType(id, std::move(info));
 }
 
 bool LogicalType::EqualTypeInfo(const LogicalType &rhs) const {

@@ -277,21 +277,22 @@ bool ExportAggregateFunctionBindData::Equals(const FunctionData &other_p) const 
 	return aggregate->Equals(*other.aggregate);
 }
 
-static void ExportStateAggregateSerialize(FieldWriter &writer, const FunctionData *bind_data_p,
+static void ExportStateAggregateSerialize(Serializer &serializer, const optional_ptr<FunctionData> bind_data_p,
                                           const AggregateFunction &function) {
 	throw NotImplementedException("FIXME: export state serialize");
 }
-static unique_ptr<FunctionData> ExportStateAggregateDeserialize(PlanDeserializationState &state, FieldReader &reader,
-                                                                AggregateFunction &bound_function) {
+
+static unique_ptr<FunctionData> ExportStateAggregateDeserialize(Deserializer &deserializer,
+                                                                AggregateFunction &function) {
 	throw NotImplementedException("FIXME: export state deserialize");
 }
 
-static void ExportStateScalarSerialize(FieldWriter &writer, const FunctionData *bind_data_p,
+static void ExportStateScalarSerialize(Serializer &serializer, const optional_ptr<FunctionData> bind_data_p,
                                        const ScalarFunction &function) {
 	throw NotImplementedException("FIXME: export state serialize");
 }
-static unique_ptr<FunctionData> ExportStateScalarDeserialize(PlanDeserializationState &state, FieldReader &reader,
-                                                             ScalarFunction &bound_function) {
+
+static unique_ptr<FunctionData> ExportStateScalarDeserialize(Deserializer &deserializer, ScalarFunction &function) {
 	throw NotImplementedException("FIXME: export state deserialize");
 }
 

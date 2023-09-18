@@ -15,7 +15,6 @@
 #include "duckdb/planner/operator/logical_join.hpp"
 
 namespace duckdb {
-class LogicalDelimJoin;
 
 //! LogicalComparisonJoin represents a join that involves comparisons between the LHS and RHS
 class LogicalComparisonJoin : public LogicalJoin {
@@ -30,19 +29,14 @@ public:
 	vector<JoinCondition> conditions;
 	//! Used for duplicate-eliminated MARK joins
 	vector<LogicalType> mark_types;
+	//! The set of columns that will be duplicate eliminated from the LHS and pushed into the RHS
+	vector<unique_ptr<Expression>> duplicate_eliminated_columns;
 
 public:
 	string ParamsToString() const override;
-	void Serialize(FieldWriter &writer) const override;
-	static unique_ptr<LogicalOperator> Deserialize(LogicalDeserializationState &state, FieldReader &reader);
-	static void Deserialize(LogicalComparisonJoin &comparison_join, LogicalDeserializationState &state,
-	                        FieldReader &reader);
 
-	void FormatSerialize(FormatSerializer &serializer) const override;
-	static unique_ptr<LogicalOperator> FormatDeserialize(FormatDeserializer &deserializer);
-
-	//! Turn a delim join into a regular comparison join (after all required delim scans have been pruned)
-	static unique_ptr<LogicalOperator> FromDelimJoin(LogicalDelimJoin &join);
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<LogicalOperator> Deserialize(Deserializer &deserializer);
 
 public:
 	static unique_ptr<LogicalOperator> CreateJoin(ClientContext &context, JoinType type, JoinRefType ref_type,

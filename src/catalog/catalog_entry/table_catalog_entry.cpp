@@ -4,8 +4,6 @@
 #include "duckdb/catalog/catalog_entry/schema_catalog_entry.hpp"
 #include "duckdb/common/algorithm.hpp"
 #include "duckdb/common/exception.hpp"
-#include "duckdb/common/field_writer.hpp"
-#include "duckdb/common/serializer.hpp"
 #include "duckdb/main/database.hpp"
 #include "duckdb/parser/constraints/list.hpp"
 #include "duckdb/parser/parsed_data/create_table_info.hpp"
@@ -169,10 +167,6 @@ string TableCatalogEntry::ToSQL() const {
 }
 
 const ColumnList &TableCatalogEntry::GetColumns() const {
-	return columns;
-}
-
-ColumnList &TableCatalogEntry::GetColumnsMutable() {
 	return columns;
 }
 

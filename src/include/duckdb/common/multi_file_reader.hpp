@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "duckdb/common/types.hpp"
+#include "duckdb/common/common.hpp"
 #include "duckdb/common/multi_file_reader_options.hpp"
 #include "duckdb/common/enums/file_glob_options.hpp"
 #include "duckdb/common/union_by_name.hpp"
@@ -31,7 +31,7 @@ struct HivePartitioningIndex {
 	idx_t index;
 
 	DUCKDB_API void Serialize(Serializer &serializer) const;
-	DUCKDB_API static HivePartitioningIndex Deserialize(Deserializer &source);
+	DUCKDB_API static HivePartitioningIndex Deserialize(Deserializer &deserializer);
 };
 
 //! The bind data for the multi-file reader, obtained through MultiFileReader::BindReader
@@ -42,7 +42,7 @@ struct MultiFileReaderBindData {
 	vector<HivePartitioningIndex> hive_partitioning_indexes;
 
 	DUCKDB_API void Serialize(Serializer &serializer) const;
-	DUCKDB_API static MultiFileReaderBindData Deserialize(Deserializer &source);
+	DUCKDB_API static MultiFileReaderBindData Deserialize(Deserializer &deserializer);
 };
 
 struct MultiFileFilterEntry {

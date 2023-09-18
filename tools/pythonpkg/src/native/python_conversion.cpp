@@ -247,14 +247,10 @@ void TransformPythonUnsigned(uint64_t value, Value &res) {
 bool TrySniffPythonNumeric(Value &res, int64_t value) {
 	if (value < (int64_t)std::numeric_limits<int32_t>::min() || value > (int64_t)std::numeric_limits<int32_t>::max()) {
 		res = Value::BIGINT(value);
-	} else if (value < (int32_t)std::numeric_limits<int16_t>::min() ||
-	           value > (int32_t)std::numeric_limits<int16_t>::max()) {
-		res = Value::INTEGER(value);
-	} else if (value < (int16_t)std::numeric_limits<int8_t>::min() ||
-	           value > (int16_t)std::numeric_limits<int8_t>::max()) {
-		res = Value::SMALLINT(value);
 	} else {
-		res = Value::TINYINT(value);
+		// To match default duckdb behavior, numeric values without a specified type should not become a smaller type
+		// than INT32
+		res = Value::INTEGER(value);
 	}
 	return true;
 }
@@ -482,15 +478,14 @@ Value TransformPythonValue(py::handle ele, const LogicalType &target_type, bool 
 	case PythonObjectType::String:
 		return ele.cast<string>();
 	case PythonObjectType::ByteArray: {
-		auto byte_array = ele.ptr();
-		const_data_ptr_t bytes = const_data_ptr_cast(PyByteArray_AsString(byte_array)); // NOLINT
-		idx_t byte_length = PyUtil::PyByteArrayGetSize(byte_array);                     // NOLINT
+		auto byte_array = ele;
+		const_data_ptr_t bytes = const_data_ptr_cast(PyByteArray_AsString(byte_array.ptr())); // NOLINT
+		idx_t byte_length = PyUtil::PyByteArrayGetSize(byte_array);                           // NOLINT
 		return Value::BLOB(bytes, byte_length);
 	}
 	case PythonObjectType::MemoryView: {
 		py::memoryview py_view = ele.cast<py::memoryview>();
-		PyObject *py_view_ptr = py_view.ptr();
-		Py_buffer *py_buf = PyUtil::PyMemoryViewGetBuffer(py_view_ptr); // NOLINT
+		Py_buffer *py_buf = PyUtil::PyMemoryViewGetBuffer(py_view); // NOLINT
 		return Value::BLOB(const_data_ptr_t(py_buf->buf), idx_t(py_buf->len));
 	}
 	case PythonObjectType::Bytes: {
