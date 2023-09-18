@@ -247,7 +247,9 @@ void MultiFileReader::CreateNameMapping(const string &file_name, const vector<Lo
 	for (idx_t col_idx = 0; col_idx < local_names.size(); col_idx++) {
 		name_map[local_names[col_idx]] = col_idx;
 	}
-	for (idx_t i = 0; i < global_column_ids.size(); i++) {
+	size_t num_column_ids;
+	with_ordinality ? num_column_ids = global_column_ids.size()-1 : num_column_ids = global_column_ids.size();
+	for (idx_t i = 0; i < num_column_ids; i++) {
 		// check if this is a constant column
 		bool constant = false;
 		for (auto &entry : reader_data.constant_map) {
