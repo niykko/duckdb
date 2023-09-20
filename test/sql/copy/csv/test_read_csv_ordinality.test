@@ -1,0 +1,20 @@
+# name: test/sql/copy/csv/test_read_csv_ordinality.test
+# description: Test read CSV function with "with ordinality"
+# group: [csv]
+
+# name: test/sql/copy/csv/test_read_csv.test
+# description: Test read CSV function
+# group: [csv]
+
+# test if read_csv:
+#	- continues to count correctly when vector is full
+#	- continues to count from correct index when new file is read
+query IIII
+select * from read_csv_auto(['test/sql/copy/csv/data/test/ordinality_test_over_vector1.csv', 'test/sql/copy/csv/data/test/ordinality_test_over_vector2.csv']) with ordinality;
+----
+20004 values hashing to f510e922d2606e405a058e8be6c91481
+
+query IIII
+select * from read_csv(['test/sql/copy/csv/data/test/ordinality_test_over_vector1.csv', 'test/sql/copy/csv/data/test/ordinality_test_over_vector2.csv'], auto_detect=true) with ordinality;
+----
+20004 values hashing to f510e922d2606e405a058e8be6c91481
