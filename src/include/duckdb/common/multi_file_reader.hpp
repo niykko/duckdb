@@ -109,7 +109,7 @@ struct MultiFileReader {
 	                                     const vector<string> &local_names, const vector<LogicalType> &global_types,
 	                                     const vector<string> &global_names, const vector<column_t> &global_column_ids,
 	                                     optional_ptr<TableFilterSet> filters, MultiFileReaderData &reader_data,
-	                                     const string &initial_file);
+	                                     const string &initial_file, const bool with_ordinality);
 	//! Finalize the reading of a chunk - applying any constants that are required
 	DUCKDB_API static void FinalizeChunk(const MultiFileReaderBindData &bind_data,
 	                                     const MultiFileReaderData &reader_data, DataChunk &chunk);
@@ -159,11 +159,11 @@ struct MultiFileReader {
 	                             const MultiFileReaderBindData &bind_data, const vector<LogicalType> &global_types,
 	                             const vector<string> &global_names, const vector<column_t> &global_column_ids,
 	                             optional_ptr<TableFilterSet> table_filters, const string &initial_file,
-	                             ClientContext &context) {
+	                             ClientContext &context,const bool with_ordinality) {
 		FinalizeBind(options, bind_data, reader.GetFileName(), reader.GetNames(), global_types, global_names,
 		             global_column_ids, reader.reader_data, context);
 		CreateMapping(reader.GetFileName(), reader.GetTypes(), reader.GetNames(), global_types, global_names,
-		              global_column_ids, table_filters, reader.reader_data, initial_file);
+		              global_column_ids, table_filters, reader.reader_data, initial_file, with_ordinality);
 		reader.reader_data.filters = table_filters;
 	}
 
@@ -201,7 +201,7 @@ private:
 	static void CreateNameMapping(const string &file_name, const vector<LogicalType> &local_types,
 	                              const vector<string> &local_names, const vector<LogicalType> &global_types,
 	                              const vector<string> &global_names, const vector<column_t> &global_column_ids,
-	                              MultiFileReaderData &reader_data, const string &initial_file);
+	                              MultiFileReaderData &reader_data, const string &initial_file, const bool with_ordinality);
 };
 
 } // namespace duckdb
