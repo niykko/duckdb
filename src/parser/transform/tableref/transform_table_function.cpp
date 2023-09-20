@@ -30,7 +30,7 @@ unique_ptr<TableRef> Transformer::TransformRangeFunction(duckdb_libpgquery::PGRa
 		result->function = TransformFuncCall(*func_call);
 		std::string function_name = PGPointerCast<duckdb_libpgquery::PGValue>(func_call->funcname->head->data.ptr_value)->val.str;
 		// temporary, ugly placeholder
-		std::vector<std::string> allowed_functions{"unnest", "repeat", "repeat_row", "generate_series", "range", "glob", "read_csv_auto"};
+		std::vector<std::string> allowed_functions{"unnest", "repeat", "repeat_row", "generate_series", "range", "glob", "read_csv_auto", "read_csv"};
 		if (root.ordinality) {
 			if (!(std::find(allowed_functions.begin(), allowed_functions.end(), function_name) != allowed_functions.end())) {
 				throw NotImplementedException("WITH ORDINALITY not implemented for " + function_name);
