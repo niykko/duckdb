@@ -53,6 +53,7 @@ public:
 	}
 
 	unique_ptr<LocalTableFunctionState> local_state;
+	idx_t ord_index = 1;
 };
 
 unique_ptr<LocalSourceState> PhysicalTableScan::GetLocalSourceState(ExecutionContext &context,
@@ -64,6 +65,14 @@ unique_ptr<GlobalSourceState> PhysicalTableScan::GetGlobalSourceState(ClientCont
 	return make_uniq<TableScanGlobalSourceState>(context, *this);
 }
 
+void PhysicalTableScan::PrepareOrdinality(DataChunk &chunk, idx_t &ord_index) const {
+	idx_t ordinality = chunk.size();
+	if (ordinality > 0) {
+		idx_t ordinality_column = column_ids.size() - 1;
+		chunk.data[ordinality_column].Sequence(ord_index,1, ordinality);
+	}
+}
+
 SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk &chunk,
                                             OperatorSourceInput &input) const {
 	D_ASSERT(!column_ids.empty());
@@ -73,7 +82,16 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	function.function(context.client, data, chunk);
 
-	return chunk.size() == 0 ? SourceResultType::FINISHED : SourceResultType::HAVE_MORE_OUTPUT;
+	if (function.with_ordinality) {
+		PrepareOrdinality(chunk, state.ord_index);
+	}
+
+	if (chunk.size() == 0) {
+		return SourceResultType::FINISHED;
+	} else {
+		state.ord_index += chunk.size();
+		return SourceResultType::HAVE_MORE_OUTPUT;
+	}
 }
 
 double PhysicalTableScan::GetProgress(ClientContext &context, GlobalSourceState &gstate_p) const {
