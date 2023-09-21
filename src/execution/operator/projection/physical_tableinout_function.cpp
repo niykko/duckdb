@@ -74,7 +74,9 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	if (projected_input.empty()) {
 		// straightforward case - no need to project input
 		duckdb::OperatorResultType result = function.in_out_function(context, data, input, chunk);
-		PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
+		if (function.with_ordinality) {
+			PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
+		}
 		return result;
 	}
 	// when project_input is set we execute the input function row-by-row
