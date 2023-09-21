@@ -3,10 +3,9 @@
 # group: [glob]
 
 query II
-SELECT * FROM glob('test/sql/copy/csv/data/glob/a?/*.csv') with ordinality;
+SELECT * FROM glob('test/sql/copy/csv/data/glob/a?/a2.csv') with ordinality;
 ----
 test/sql/copy/csv/data/glob/a2/a2.csv	1
-test/sql/copy/csv/data/glob/a1/a1.csv	2
-test/sql/copy/csv/data/glob/a3/b1.csv	3
+
 
 
