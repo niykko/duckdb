@@ -12,9 +12,9 @@
 query IIII
 select * from read_csv_auto(['test/sql/copy/csv/data/test/ordinality_test_over_vector1.csv', 'test/sql/copy/csv/data/test/ordinality_test_over_vector2.csv']) with ordinality;
 ----
-20004 values hashing to f510e922d2606e405a058e8be6c91481
+20008 values hashing to aa9b9bfb4098069b97ba532ec56f226d
 
 query IIII
 select * from read_csv(['test/sql/copy/csv/data/test/ordinality_test_over_vector1.csv', 'test/sql/copy/csv/data/test/ordinality_test_over_vector2.csv'], auto_detect=true) with ordinality;
 ----
-20004 values hashing to f510e922d2606e405a058e8be6c91481
+20008 values hashing to aa9b9bfb4098069b97ba532ec56f226d
