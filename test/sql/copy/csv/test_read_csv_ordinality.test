@@ -9,12 +9,14 @@
 # test if read_csv:
 #	- continues to count correctly when vector is full
 #	- continues to count from correct index when new file is read
+#mode output_hash
+
 query IIII
-select * from read_csv_auto(['test/sql/copy/csv/data/test/ordinality_test_over_vector1.csv', 'test/sql/copy/csv/data/test/ordinality_test_over_vector2.csv']) with ordinality;
+select * from read_csv_auto(['test/sql/copy/csv/data/test/ordinality_test_over_vector1.csv', 'test/sql/copy/csv/data/test/ordinality_test_over_vector2.csv'], header=true) with ordinality;
 ----
 20008 values hashing to aa9b9bfb4098069b97ba532ec56f226d
 
 query IIII
-select * from read_csv(['test/sql/copy/csv/data/test/ordinality_test_over_vector1.csv', 'test/sql/copy/csv/data/test/ordinality_test_over_vector2.csv'], auto_detect=true) with ordinality;
+select * from read_csv(['test/sql/copy/csv/data/test/ordinality_test_over_vector1.csv', 'test/sql/copy/csv/data/test/ordinality_test_over_vector2.csv'], auto_detect=true, header=true) with ordinality;
 ----
 20008 values hashing to aa9b9bfb4098069b97ba532ec56f226d
