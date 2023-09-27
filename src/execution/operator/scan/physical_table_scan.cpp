@@ -69,7 +69,7 @@ void PhysicalTableScan::PrepareOrdinality(DataChunk &chunk, idx_t &ord_index) co
 	idx_t ordinality = chunk.size();
 	if (ordinality > 0) {
 		idx_t ordinality_column = column_ids.size() - 1;
-		chunk.data[ordinality_column].Sequence(ord_index,1, ordinality);
+		chunk.data[ordinality_column].Sequence(ord_index, 1, ordinality);
 	}
 }
 

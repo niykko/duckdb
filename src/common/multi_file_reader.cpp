@@ -239,7 +239,8 @@ void MultiFileReader::FinalizeBind(const MultiFileReaderOptions &file_options, c
 void MultiFileReader::CreateNameMapping(const string &file_name, const vector<LogicalType> &local_types,
                                         const vector<string> &local_names, const vector<LogicalType> &global_types,
                                         const vector<string> &global_names, const vector<column_t> &global_column_ids,
-                                        MultiFileReaderData &reader_data, const string &initial_file, const bool with_ordinality) {
+                                        MultiFileReaderData &reader_data, const string &initial_file,
+                                        const bool with_ordinality) {
 	D_ASSERT(global_types.size() == global_names.size());
 	D_ASSERT(local_types.size() == local_names.size());
 	// we have expected types: create a map of name -> column index
@@ -248,7 +249,7 @@ void MultiFileReader::CreateNameMapping(const string &file_name, const vector<Lo
 		name_map[local_names[col_idx]] = col_idx;
 	}
 	size_t num_column_ids;
-	with_ordinality ? num_column_ids = global_column_ids.size()-1 : num_column_ids = global_column_ids.size();
+	with_ordinality ? num_column_ids = global_column_ids.size() - 1 : num_column_ids = global_column_ids.size();
 	for (idx_t i = 0; i < num_column_ids; i++) {
 		// check if this is a constant column
 		bool constant = false;

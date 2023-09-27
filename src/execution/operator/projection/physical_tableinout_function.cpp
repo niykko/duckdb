@@ -62,7 +62,7 @@ void PhysicalTableInOutFunction::PrepareOrdinality(DataChunk &chunk, idx_t &ord_
 			ord_reset = false;
 		}
 		const idx_t ordinality_column = column_ids.size() - 1;
-		chunk.data[ordinality_column].Sequence(ord_index,1, ordinality);
+		chunk.data[ordinality_column].Sequence(ord_index, 1, ordinality);
 	}
 }
 

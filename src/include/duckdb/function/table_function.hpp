@@ -280,7 +280,6 @@ public:
 	//! used for WITH ORDINALITY propagation
 	bool with_ordinality = false;
 
-
 	DUCKDB_API bool Equal(const TableFunction &rhs) const;
 };
 

@@ -159,7 +159,7 @@ struct MultiFileReader {
 	                             const MultiFileReaderBindData &bind_data, const vector<LogicalType> &global_types,
 	                             const vector<string> &global_names, const vector<column_t> &global_column_ids,
 	                             optional_ptr<TableFilterSet> table_filters, const string &initial_file,
-	                             ClientContext &context,const bool with_ordinality) {
+	                             ClientContext &context, const bool with_ordinality) {
 		FinalizeBind(options, bind_data, reader.GetFileName(), reader.GetNames(), global_types, global_names,
 		             global_column_ids, reader.reader_data, context);
 		CreateMapping(reader.GetFileName(), reader.GetTypes(), reader.GetNames(), global_types, global_names,
@@ -201,7 +201,8 @@ private:
 	static void CreateNameMapping(const string &file_name, const vector<LogicalType> &local_types,
 	                              const vector<string> &local_names, const vector<LogicalType> &global_types,
 	                              const vector<string> &global_names, const vector<column_t> &global_column_ids,
-	                              MultiFileReaderData &reader_data, const string &initial_file, const bool with_ordinality);
+	                              MultiFileReaderData &reader_data, const string &initial_file,
+	                              const bool with_ordinality);
 };
 
 } // namespace duckdb
