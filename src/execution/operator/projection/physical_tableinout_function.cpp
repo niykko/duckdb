@@ -1,4 +1,5 @@
 #include "duckdb/execution/operator/projection/physical_tableinout_function.hpp"
+#include "duckdb/execution/operator/projection/OrdinalityData.h"
 
 namespace duckdb {
 
@@ -54,18 +55,6 @@ unique_ptr<GlobalOperatorState> PhysicalTableInOutFunction::GetGlobalOperatorSta
 	return std::move(result);
 }
 
-void PhysicalTableInOutFunction::PrepareOrdinality(DataChunk &chunk, idx_t &ord_index, bool &ord_reset) const {
-	const idx_t ordinality = chunk.size();
-	if (ordinality > 0) {
-		if (ord_reset) {
-			ord_index = 1;
-			ord_reset = false;
-		}
-		const idx_t ordinality_column = column_ids.size() - 1;
-		chunk.data[ordinality_column].Sequence(ord_index, 1, ordinality);
-	}
-}
-
 OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
                                                        GlobalOperatorState &gstate_p, OperatorState &state_p) const {
 	auto &gstate = gstate_p.Cast<TableInOutGlobalState>();
@@ -75,7 +64,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		// straightforward case - no need to project input
 		duckdb::OperatorResultType result = function.in_out_function(context, data, input, chunk);
 		if (function.with_ordinality) {
-			PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
+			OrdinalityData::PrepareOrdinality(chunk, column_ids, state.ord_index, state.ord_reset);
 		}
 		return result;
 	}
@@ -110,7 +99,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	}
 	auto result = function.in_out_function(context, data, state.input_chunk, chunk);
 	if (function.with_ordinality) {
-		PrepareOrdinality(chunk, state.ord_index, state.ord_reset);
+		OrdinalityData::PrepareOrdinality(chunk, column_ids, state.ord_index, state.ord_reset);
 	}
 	if (result == OperatorResultType::FINISHED) {
 		return result;

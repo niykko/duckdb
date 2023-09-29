@@ -4,6 +4,7 @@
 #include "duckdb/common/string_util.hpp"
 #include "duckdb/planner/expression/bound_conjunction_expression.hpp"
 #include "duckdb/transaction/transaction.hpp"
+#include "duckdb/execution/operator/projection/OrdinalityData.h"
 
 #include <utility>
 
@@ -65,14 +66,6 @@ unique_ptr<GlobalSourceState> PhysicalTableScan::GetGlobalSourceState(ClientCont
 	return make_uniq<TableScanGlobalSourceState>(context, *this);
 }
 
-void PhysicalTableScan::PrepareOrdinality(DataChunk &chunk, idx_t &ord_index) const {
-	idx_t ordinality = chunk.size();
-	if (ordinality > 0) {
-		idx_t ordinality_column = column_ids.size() - 1;
-		chunk.data[ordinality_column].Sequence(ord_index, 1, ordinality);
-	}
-}
-
 SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk &chunk,
                                             OperatorSourceInput &input) const {
 	D_ASSERT(!column_ids.empty());
@@ -83,7 +76,7 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	function.function(context.client, data, chunk);
 
 	if (function.with_ordinality) {
-		PrepareOrdinality(chunk, state.ord_index);
+		OrdinalityData::PrepareOrdinality(chunk, column_ids, state.ord_index);
 	}
 
 	if (chunk.size() == 0) {
