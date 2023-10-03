@@ -974,6 +974,7 @@ TableFunction ReadCSVTableFunction::GetFunction() {
 	read_csv.get_batch_index = CSVReaderGetBatchIndex;
 	read_csv.cardinality = CSVReaderCardinality;
 	read_csv.projection_pushdown = true;
+	read_csv.ordinality_implemented = true;
 	ReadCSVAddNamedParameters(read_csv);
 	return read_csv;
 }
@@ -982,6 +983,7 @@ TableFunction ReadCSVTableFunction::GetAutoFunction() {
 	auto read_csv_auto = ReadCSVTableFunction::GetFunction();
 	read_csv_auto.name = "read_csv_auto";
 	read_csv_auto.bind = ReadCSVAutoBind;
+	read_csv_auto.ordinality_implemented = true;
 	return read_csv_auto;
 }
 
