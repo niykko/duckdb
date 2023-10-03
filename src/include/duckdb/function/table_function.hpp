@@ -277,8 +277,10 @@ public:
 	bool filter_prune;
 	//! Additional function info, passed to the bind
 	shared_ptr<TableFunctionInfo> function_info;
-	//! used for WITH ORDINALITY
-	bool with_ordinality = false;
+	//! bool to propagate whether or not WITH ORDINALITY has been requested in the parser
+	bool with_ordinality;
+	//! bool to check whether or not WITH ORDINALITY feature has been implemented for this table function
+	bool ordinality_implemented;
 
 
 	DUCKDB_API bool Equal(const TableFunction &rhs) const;
