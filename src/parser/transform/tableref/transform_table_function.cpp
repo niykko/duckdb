@@ -1,7 +1,6 @@
 #include "duckdb/common/exception.hpp"
 #include "duckdb/parser/tableref/table_function_ref.hpp"
 #include "duckdb/parser/transformer.hpp"
-#include <algorithm>
 namespace duckdb {
 
 unique_ptr<TableRef> Transformer::TransformRangeFunction(duckdb_libpgquery::PGRangeFunction &root) {
