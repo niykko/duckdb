@@ -4,7 +4,7 @@
 #include "duckdb/common/string_util.hpp"
 #include "duckdb/planner/expression/bound_conjunction_expression.hpp"
 #include "duckdb/transaction/transaction.hpp"
-#include "duckdb/execution/operator/projection/OrdinalityData.h"
+#include "duckdb/function/table/ordinality_data.hpp"
 
 #include <utility>
 
@@ -54,7 +54,7 @@ public:
 	}
 
 	unique_ptr<LocalTableFunctionState> local_state;
-	idx_t ord_index = 1;
+	OrdinalityData ordinalityData;
 };
 
 unique_ptr<LocalSourceState> PhysicalTableScan::GetLocalSourceState(ExecutionContext &context,
@@ -75,14 +75,15 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	function.function(context.client, data, chunk);
 
-	if (function.with_ordinality) {
-		OrdinalityData::PrepareOrdinality(chunk, column_ids, state.ord_index);
+	if (function.ordinalityData.with_ordinality) {
+		state.ordinalityData = std::move(function.ordinalityData);
+		state.ordinalityData.SetOrdinality(chunk, column_ids);
 	}
 
 	if (chunk.size() == 0) {
 		return SourceResultType::FINISHED;
 	} else {
-		state.ord_index += chunk.size();
+		state.ordinalityData.ord_index += chunk.size();
 		return SourceResultType::HAVE_MORE_OUTPUT;
 	}
 }

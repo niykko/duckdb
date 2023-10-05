@@ -15,6 +15,7 @@
 #include "duckdb/planner/bind_context.hpp"
 #include "duckdb/planner/logical_operator.hpp"
 #include "duckdb/storage/statistics/node_statistics.hpp"
+#include "duckdb/function/table/ordinality_data.hpp"
 
 #include <functional>
 
@@ -277,8 +278,8 @@ public:
 	bool filter_prune;
 	//! Additional function info, passed to the bind
 	shared_ptr<TableFunctionInfo> function_info;
-	//! bool to propagate whether or not WITH ORDINALITY has been requested in the parser
-	bool with_ordinality;
+	//! Data for WITH ORDINALITY feature
+	OrdinalityData ordinalityData;
 	//! bool to check whether or not WITH ORDINALITY feature has been implemented for this table function
 	bool ordinality_implemented;
 

@@ -1,5 +1,5 @@
 #include "duckdb/execution/operator/projection/physical_tableinout_function.hpp"
-#include "duckdb/execution/operator/projection/OrdinalityData.h"
+#include "duckdb/function/table/ordinality_data.hpp"
 
 namespace duckdb {
 
@@ -12,8 +12,7 @@ public:
 	idx_t row_index;
 	bool new_row;
 	DataChunk input_chunk;
-	idx_t ord_index = 1;
-	bool ord_reset = false;
+	OrdinalityData ordinalityData;
 };
 
 class TableInOutGlobalState : public GlobalOperatorState {
@@ -63,8 +62,8 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	if (projected_input.empty()) {
 		// straightforward case - no need to project input
 		duckdb::OperatorResultType result = function.in_out_function(context, data, input, chunk);
-		if (function.with_ordinality) {
-			OrdinalityData::PrepareOrdinality(chunk, column_ids, state.ord_index, state.ord_reset);
+		if (function.ordinalityData.with_ordinality) {
+			state.ordinalityData.SetOrdinality(chunk, column_ids);
 		}
 		return result;
 	}
@@ -86,7 +85,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		state.input_chunk.SetCardinality(1);
 		state.row_index++;
 		state.new_row = false;
-		state.ord_reset = true;
+		state.ordinalityData.ord_reset = true;
 	}
 	// set up the output data in "chunk"
 	D_ASSERT(chunk.ColumnCount() > projected_input.size());
@@ -98,8 +97,8 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		ConstantVector::Reference(chunk.data[target_idx], input.data[source_idx], state.row_index - 1, 1);
 	}
 	auto result = function.in_out_function(context, data, state.input_chunk, chunk);
-	if (function.with_ordinality) {
-		OrdinalityData::PrepareOrdinality(chunk, column_ids, state.ord_index, state.ord_reset);
+	if (function.ordinalityData.with_ordinality) {
+		state.ordinalityData.SetOrdinality(chunk, column_ids);
 	}
 	if (result == OperatorResultType::FINISHED) {
 		return result;
@@ -108,7 +107,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		// we finished processing this row: move to the next row
 		state.new_row = true;
 	}
-	state.ord_index += chunk.size();
+	state.ordinalityData.ord_index += chunk.size();
 	return OperatorResultType::HAVE_MORE_OUTPUT;
 }
 
