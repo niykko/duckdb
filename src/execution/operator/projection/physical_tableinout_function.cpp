@@ -63,7 +63,12 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		// straightforward case - no need to project input
 		duckdb::OperatorResultType result = function.in_out_function(context, data, input, chunk);
 		if (function.ordinalityData.with_ordinality) {
+			if (!state.ordinalityData.initialized) {
+				state.ordinalityData = function.ordinalityData;
+				state.ordinalityData.initialized = true;
+			}
 			state.ordinalityData.SetOrdinality(chunk, column_ids);
+			state.ordinalityData.ord_index += chunk.size();
 		}
 		return result;
 	}
@@ -98,6 +103,10 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	}
 	auto result = function.in_out_function(context, data, state.input_chunk, chunk);
 	if (function.ordinalityData.with_ordinality) {
+		if (!state.ordinalityData.initialized) {
+			state.ordinalityData = function.ordinalityData;
+			state.ordinalityData.initialized = true;
+		}
 		state.ordinalityData.SetOrdinality(chunk, column_ids);
 	}
 	if (result == OperatorResultType::FINISHED) {

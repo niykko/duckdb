@@ -76,7 +76,10 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	function.function(context.client, data, chunk);
 
 	if (function.ordinalityData.with_ordinality) {
-		state.ordinalityData = std::move(function.ordinalityData);
+		if (!state.ordinalityData.initialized) {
+			state.ordinalityData = function.ordinalityData;
+			state.ordinalityData.initialized = true;
+		}
 		state.ordinalityData.SetOrdinality(chunk, column_ids);
 	}
 
