@@ -22,7 +22,7 @@ public:
 	PhysicalTableInOutFunction(vector<LogicalType> types, TableFunction function_p,
 	                           unique_ptr<FunctionData> bind_data_p, vector<column_t> column_ids_p,
 	                           idx_t estimated_cardinality, vector<column_t> projected_input);
-	
+
 public:
 	unique_ptr<OperatorState> GetOperatorState(ExecutionContext &context) const override;
 	unique_ptr<GlobalOperatorState> GetGlobalOperatorState(ClientContext &context) const override;

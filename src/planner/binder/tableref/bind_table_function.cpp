@@ -167,7 +167,7 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			csv_bind.with_ordinality = table_function.ordinalityData.with_ordinality;
 			if (csv_bind.single_threaded) {
 				table_function.extra_info = ""
-											"(Single-Threaded)";
+				                            "(Single-Threaded)";
 			} else {
 				table_function.extra_info = "(Multi-Threaded)";
 			}

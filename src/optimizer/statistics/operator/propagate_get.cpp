@@ -40,7 +40,8 @@ unique_ptr<NodeStatistics> StatisticsPropagator::PropagateStatistics(LogicalGet 
 		return std::move(node_stats);
 	}
 	size_t num_column_ids;
-	get.function.ordinalityData.with_ordinality ? num_column_ids = get.column_ids.size() - 1 : num_column_ids = get.column_ids.size();
+	get.function.ordinalityData.with_ordinality ? num_column_ids = get.column_ids.size() - 1
+	                                            : num_column_ids = get.column_ids.size();
 	for (idx_t i = 0; i < num_column_ids; i++) {
 		auto stats = get.function.statistics(context, get.bind_data.get(), get.column_ids[i]);
 		if (stats) {
