@@ -2,7 +2,7 @@
 //  DuckDB
 //  https://github.com/duckdb/duckdb-swift
 //
-//  Copyright © 2018-2023 Stichting DuckDB Foundation
+//  Copyright © 2018-2024 Stichting DuckDB Foundation
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to
@@ -79,6 +79,11 @@ final class TypeConversionTests: XCTestCase {
     try extractTest(testColumnName: "hugeint", expected: expected) { $0.cast(to: IntHuge.self) }
   }
   
+  func test_extract_from_uhugeint() throws {
+    let expected = [UIntHuge.min, UIntHuge.max, nil]
+    try extractTest(testColumnName: "uhugeint", expected: expected) { $0.cast(to: UIntHuge.self) }
+  }
+  
   func test_extract_from_float() throws {
     let expected = [-Float.greatestFiniteMagnitude, .greatestFiniteMagnitude, nil]
     try extractTest(testColumnName: "float", expected: expected) { $0.cast(to: Float.self) }
@@ -106,7 +111,7 @@ final class TypeConversionTests: XCTestCase {
   func test_extract_from_time() throws {
     let expected = [
       Time(components: .init(hour: 0, minute: 0, second: 0, microsecond: 0)),
-      Time(components: .init(hour: 23, minute: 59, second: 59, microsecond: 999_999)),
+      Time(components: .init(hour: 24, minute: 0, second: 0, microsecond: 0)),
       nil
     ]
     try extractTest(testColumnName: "time", expected: expected) { $0.cast(to: Time.self) }

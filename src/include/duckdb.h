@@ -55,7 +55,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,6 +100,8 @@ typedef enum DUCKDB_TYPE {
 	DUCKDB_TYPE_INTERVAL,
 	// duckdb_hugeint
 	DUCKDB_TYPE_HUGEINT,
+	// duckdb_uhugeint
+	DUCKDB_TYPE_UHUGEINT,
 	// const char*
 	DUCKDB_TYPE_VARCHAR,
 	// duckdb_blob
@@ -179,6 +181,11 @@ typedef struct {
 } duckdb_hugeint;
 
 typedef struct {
+	uint64_t lower;
+	uint64_t upper;
+} duckdb_uhugeint;
+
+typedef struct {
 	uint8_t width;
 	uint8_t scale;
 
@@ -190,6 +197,11 @@ typedef struct {
 	idx_t size;
 } duckdb_string;
 
+typedef struct {
+	double percentage;
+	uint64_t rows_processed;
+	uint64_t total_rows_to_process;
+} duckdb_query_progress_type;
 /*
     The internal data representation of a VARCHAR/BLOB column
 */
@@ -413,7 +425,7 @@ Get progress of the running query
 * connection: The working connection
 * returns: -1 if no progress or a percentage of the progress
 */
-DUCKDB_API double duckdb_query_progress(duckdb_connection connection);
+DUCKDB_API duckdb_query_progress_type duckdb_query_progress(duckdb_connection connection);
 
 /*!
 Closes the specified connection and de-allocates all memory allocated for that connection.
@@ -719,6 +731,11 @@ DUCKDB_API int64_t duckdb_value_int64(duckdb_result *result, idx_t col, idx_t ro
 DUCKDB_API duckdb_hugeint duckdb_value_hugeint(duckdb_result *result, idx_t col, idx_t row);
 
 /*!
+ * returns: The duckdb_uhugeint value at the specified location, or 0 if the value cannot be converted.
+ */
+DUCKDB_API duckdb_uhugeint duckdb_value_uhugeint(duckdb_result *result, idx_t col, idx_t row);
+
+/*!
  * returns: The duckdb_decimal value at the specified location, or 0 if the value cannot be converted.
  */
 DUCKDB_API duckdb_decimal duckdb_value_decimal(duckdb_result *result, idx_t col, idx_t row);
@@ -871,6 +888,14 @@ Re-compose a `duckdb_date` from year, month and date (`duckdb_date_struct`).
 DUCKDB_API duckdb_date duckdb_to_date(duckdb_date_struct date);
 
 /*!
+Test a `duckdb_date` to see if it is a finite value.
+
+* date: The date object, as obtained from a `DUCKDB_TYPE_DATE` column.
+* returns: True if the date is finite, false if it is ±infinity.
+*/
+DUCKDB_API bool duckdb_is_finite_date(duckdb_date date);
+
+/*!
 Decompose a `duckdb_time` object into hour, minute, second and microsecond (stored as `duckdb_time_struct`).
 
 * time: The time object, as obtained from a `DUCKDB_TYPE_TIME` column.
@@ -902,6 +927,14 @@ Re-compose a `duckdb_timestamp` from a duckdb_timestamp_struct.
 */
 DUCKDB_API duckdb_timestamp duckdb_to_timestamp(duckdb_timestamp_struct ts);
 
+/*!
+Test a `duckdb_timestamp` to see if it is a finite value.
+
+* ts: The timestamp object, as obtained from a `DUCKDB_TYPE_TIMESTAMP` column.
+* returns: True if the timestamp is finite, false if it is ±infinity.
+*/
+DUCKDB_API bool duckdb_is_finite_timestamp(duckdb_timestamp ts);
+
 //===--------------------------------------------------------------------===//
 // Hugeint Helpers
 //===--------------------------------------------------------------------===//
@@ -932,6 +965,27 @@ If the conversion fails because the double value is too big, or the width/scale 
 * returns: The converted `duckdb_decimal` element.
 */
 DUCKDB_API duckdb_decimal duckdb_double_to_decimal(double val, uint8_t width, uint8_t scale);
+
+//===--------------------------------------------------------------------===//
+// Unsigned Hugeint Helpers
+//===--------------------------------------------------------------------===//
+/*!
+Converts a duckdb_uhugeint object (as obtained from a `DUCKDB_TYPE_UHUGEINT` column) into a double.
+
+* val: The uhugeint value.
+* returns: The converted `double` element.
+*/
+DUCKDB_API double duckdb_uhugeint_to_double(duckdb_uhugeint val);
+
+/*!
+Converts a double value to a duckdb_uhugeint object.
+
+If the conversion fails because the double value is too big the result will be 0.
+
+* val: The double value.
+* returns: The converted `duckdb_uhugeint` element.
+*/
+DUCKDB_API duckdb_uhugeint duckdb_double_to_uhugeint(double val);
 
 //===--------------------------------------------------------------------===//
 // Decimal Helpers
@@ -1077,6 +1131,11 @@ Binds a duckdb_hugeint value to the prepared statement at the specified index.
 DUCKDB_API duckdb_state duckdb_bind_hugeint(duckdb_prepared_statement prepared_statement, idx_t param_idx,
                                             duckdb_hugeint val);
 /*!
+Binds an duckdb_uhugeint value to the prepared statement at the specified index.
+*/
+DUCKDB_API duckdb_state duckdb_bind_uhugeint(duckdb_prepared_statement prepared_statement, idx_t param_idx,
+                                             duckdb_uhugeint val);
+/*!
 Binds a duckdb_decimal value to the prepared statement at the specified index.
 */
 DUCKDB_API duckdb_state duckdb_bind_decimal(duckdb_prepared_statement prepared_statement, idx_t param_idx,
@@ -1171,6 +1230,20 @@ between calls to this function.
 */
 DUCKDB_API duckdb_state duckdb_execute_prepared(duckdb_prepared_statement prepared_statement,
                                                 duckdb_result *out_result);
+
+/*!
+Executes the prepared statement with the given bound parameters, and returns an optionally-streaming query result.
+To determine if the resulting query was in fact streamed, use `duckdb_result_is_streaming`
+
+This method can be called multiple times for each prepared statement, and the parameters can be modified
+between calls to this function.
+
+* prepared_statement: The prepared statement to execute.
+* out_result: The query result.
+* returns: `DuckDBSuccess` on success or `DuckDBError` on failure.
+*/
+DUCKDB_API duckdb_state duckdb_execute_prepared_streaming(duckdb_prepared_statement prepared_statement,
+                                                          duckdb_result *out_result);
 
 /*!
 Executes the prepared statement with the given bound parameters, and returns an arrow query result.
@@ -1375,6 +1448,25 @@ Creates a value from an int64
 DUCKDB_API duckdb_value duckdb_create_int64(int64_t val);
 
 /*!
+Creates a struct value from a type and an array of values
+
+* type: The type of the struct
+* values: The values for the struct fields
+* returns: The value. This must be destroyed with `duckdb_destroy_value`.
+*/
+DUCKDB_API duckdb_value duckdb_create_struct_value(duckdb_logical_type type, duckdb_value *values);
+
+/*!
+Creates a list value from a type and an array of values of length `value_count`
+
+* type: The type of the list
+* values: The values for the list
+* value_count: The number of values in the list
+* returns: The value. This must be destroyed with `duckdb_destroy_value`.
+*/
+DUCKDB_API duckdb_value duckdb_create_list_value(duckdb_logical_type type, duckdb_value *values, idx_t value_count);
+
+/*!
 Obtains a string representation of the given value.
 The result must be destroyed with `duckdb_free`.
 
@@ -1441,7 +1533,7 @@ The resulting type should be destroyed with `duckdb_destroy_logical_type`.
 * type_amount: The size of the types array.
 * returns: The logical type.
 */
-DUCKDB_API duckdb_logical_type duckdb_create_union_type(duckdb_logical_type member_types, const char **member_names,
+DUCKDB_API duckdb_logical_type duckdb_create_union_type(duckdb_logical_type *member_types, const char **member_names,
                                                         idx_t member_count);
 
 /*!
@@ -2341,6 +2433,10 @@ DUCKDB_API duckdb_state duckdb_append_uint32(duckdb_appender appender, uint32_t 
 Append a uint64_t value to the appender.
 */
 DUCKDB_API duckdb_state duckdb_append_uint64(duckdb_appender appender, uint64_t value);
+/*!
+Append a duckdb_uhugeint value to the appender.
+*/
+DUCKDB_API duckdb_state duckdb_append_uhugeint(duckdb_appender appender, duckdb_uhugeint value);
 
 /*!
 Append a float value to the appender.
