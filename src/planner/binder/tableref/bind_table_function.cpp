@@ -272,7 +272,7 @@ unique_ptr<BoundTableRef> Binder::Bind(TableFunctionRef &ref) {
 	}
 	auto table_function = function.functions.GetFunctionByOffset(best_function_idx);
 	if (ref.with_ordinality && !table_function.ordinality_implemented) {
-		throw BinderException("WITH ORDINALITY not implemented for " + ref.ToString());
+		throw NotImplementedException("WITH ORDINALITY not implemented for " + ref.ToString());
 	}
 	table_function.ordinalityData.with_ordinality = ref.with_ordinality;
 	// now check the named parameters
