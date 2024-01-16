@@ -151,12 +151,12 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			}
 		}
 		bind_data = table_function.bind(context, bind_input, return_types, return_names);
-		if (table_function.ordinalityData.with_ordinality) {
+		if (table_function.ordinality_data.with_ordinality) {
 			idx_t id = return_types.size();
 			D_ASSERT(id == return_names.size());
 			return_types.emplace_back(LogicalType::INTEGER);
 			return_names.emplace_back("ordinality");
-			table_function.ordinalityData.ordinality_column_id = id;
+			table_function.ordinality_data.ordinality_column_id = id;
 		}
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();
@@ -164,7 +164,7 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 		}
 		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto") {
 			auto &csv_bind = bind_data->Cast<ReadCSVData>();
-			csv_bind.with_ordinality = table_function.ordinalityData.with_ordinality;
+			csv_bind.with_ordinality = table_function.ordinality_data.with_ordinality;
 			if (csv_bind.single_threaded) {
 				table_function.extra_info = "(Single-Threaded)";
 			} else {
@@ -274,7 +274,7 @@ unique_ptr<BoundTableRef> Binder::Bind(TableFunctionRef &ref) {
 	if (ref.with_ordinality && !table_function.ordinality_implemented) {
 		throw NotImplementedException("WITH ORDINALITY not implemented for " + ref.ToString());
 	}
-	table_function.ordinalityData.with_ordinality = ref.with_ordinality;
+	table_function.ordinality_data.with_ordinality = ref.with_ordinality;
 	// now check the named parameters
 	BindNamedParameters(table_function.named_parameters, named_parameters, error_context, table_function.name);
 

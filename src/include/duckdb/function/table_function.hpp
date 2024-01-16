@@ -284,7 +284,7 @@ public:
 	//! Additional function info, passed to the bind
 	shared_ptr<TableFunctionInfo> function_info;
 	//! Data for WITH ORDINALITY feature
-	OrdinalityData ordinalityData;
+	OrdinalityData ordinality_data;
 	//! bool to check whether or not WITH ORDINALITY feature has been implemented for this table function
 	bool ordinality_implemented;
 

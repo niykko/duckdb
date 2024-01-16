@@ -62,9 +62,9 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	if (projected_input.empty()) {
 		// straightforward case - no need to project input
 		OperatorResultType result = function.in_out_function(context, data, input, chunk);
-		if (function.ordinalityData.with_ordinality) {
+		if (function.ordinality_data.with_ordinality) {
 			if (!state.ordinalityData.initialized) {
-				state.ordinalityData = function.ordinalityData;
+				state.ordinalityData = function.ordinality_data;
 				state.ordinalityData.initialized = true;
 			}
 			state.ordinalityData.SetOrdinality(chunk, column_ids);
@@ -102,9 +102,9 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		ConstantVector::Reference(chunk.data[target_idx], input.data[source_idx], state.row_index - 1, 1);
 	}
 	auto result = function.in_out_function(context, data, state.input_chunk, chunk);
-	if (function.ordinalityData.with_ordinality) {
+	if (function.ordinality_data.with_ordinality) {
 		if (!state.ordinalityData.initialized) {
-			state.ordinalityData = function.ordinalityData;
+			state.ordinalityData = function.ordinality_data;
 			state.ordinalityData.initialized = true;
 		}
 		state.ordinalityData.SetOrdinality(chunk, column_ids);

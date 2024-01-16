@@ -75,9 +75,9 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	function.function(context.client, data, chunk);
 
-	if (function.ordinalityData.with_ordinality) {
+	if (function.ordinality_data.with_ordinality) {
 		if (!state.ordinalityData.initialized) {
-			state.ordinalityData = function.ordinalityData;
+			state.ordinalityData = function.ordinality_data;
 			state.ordinalityData.initialized = true;
 		}
 		state.ordinalityData.SetOrdinality(chunk, column_ids);
