@@ -12,7 +12,7 @@ public:
 	idx_t row_index;
 	bool new_row;
 	DataChunk input_chunk;
-	OrdinalityData ordinalityData;
+	OrdinalityData ordinality_data;
 };
 
 class TableInOutGlobalState : public GlobalOperatorState {
@@ -63,12 +63,12 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		// straightforward case - no need to project input
 		OperatorResultType result = function.in_out_function(context, data, input, chunk);
 		if (function.ordinality_data.with_ordinality) {
-			if (!state.ordinalityData.initialized) {
-				state.ordinalityData = function.ordinality_data;
-				state.ordinalityData.initialized = true;
+			if (!state.ordinality_data.initialized) {
+				state.ordinality_data = function.ordinality_data;
+				state.ordinality_data.initialized = true;
 			}
-			state.ordinalityData.SetOrdinality(chunk, column_ids);
-			state.ordinalityData.ord_index += chunk.size();
+			state.ordinality_data.SetOrdinality(chunk, column_ids);
+			state.ordinality_data.ord_index += chunk.size();
 		}
 		return result;
 	}
@@ -90,7 +90,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		state.input_chunk.SetCardinality(1);
 		state.row_index++;
 		state.new_row = false;
-		state.ordinalityData.ord_reset = true;
+		state.ordinality_data.ord_reset = true;
 	}
 	// set up the output data in "chunk"
 	D_ASSERT(chunk.ColumnCount() > projected_input.size());
@@ -103,11 +103,11 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	}
 	auto result = function.in_out_function(context, data, state.input_chunk, chunk);
 	if (function.ordinality_data.with_ordinality) {
-		if (!state.ordinalityData.initialized) {
-			state.ordinalityData = function.ordinality_data;
-			state.ordinalityData.initialized = true;
+		if (!state.ordinality_data.initialized) {
+			state.ordinality_data = function.ordinality_data;
+			state.ordinality_data.initialized = true;
 		}
-		state.ordinalityData.SetOrdinality(chunk, column_ids);
+		state.ordinality_data.SetOrdinality(chunk, column_ids);
 	}
 	if (result == OperatorResultType::FINISHED) {
 		return result;
@@ -116,7 +116,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		// we finished processing this row: move to the next row
 		state.new_row = true;
 	}
-	state.ordinalityData.ord_index += chunk.size();
+	state.ordinality_data.ord_index += chunk.size();
 	return OperatorResultType::HAVE_MORE_OUTPUT;
 }
 
