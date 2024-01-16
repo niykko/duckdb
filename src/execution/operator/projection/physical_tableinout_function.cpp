@@ -61,7 +61,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	if (projected_input.empty()) {
 		// straightforward case - no need to project input
-		duckdb::OperatorResultType result = function.in_out_function(context, data, input, chunk);
+		OperatorResultType result = function.in_out_function(context, data, input, chunk);
 		if (function.ordinalityData.with_ordinality) {
 			if (!state.ordinalityData.initialized) {
 				state.ordinalityData = function.ordinalityData;

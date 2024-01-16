@@ -4,9 +4,6 @@
 namespace duckdb {
 
 unique_ptr<TableRef> Transformer::TransformRangeFunction(duckdb_libpgquery::PGRangeFunction &root) {
-	/*if (root.ordinality) {
-	    throw NotImplementedException("WITH ORDINALITY not implemented");
-	}*/
 	if (root.is_rowsfrom) {
 		throw NotImplementedException("ROWS FROM() not implemented");
 	}
