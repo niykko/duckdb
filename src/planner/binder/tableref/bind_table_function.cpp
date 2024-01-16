@@ -154,8 +154,8 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 		if (table_function.ordinalityData.with_ordinality) {
 			idx_t id = return_types.size();
 			D_ASSERT(id == return_names.size());
-			return_types.emplace_back(duckdb::LogicalType::INTEGER);
-			return_names.emplace_back("Ordinality");
+			return_types.emplace_back(LogicalType::INTEGER);
+			return_names.emplace_back("ordinality");
 			table_function.ordinalityData.ordinality_column_id = id;
 		}
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
@@ -166,8 +166,7 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			auto &csv_bind = bind_data->Cast<ReadCSVData>();
 			csv_bind.with_ordinality = table_function.ordinalityData.with_ordinality;
 			if (csv_bind.single_threaded) {
-				table_function.extra_info = ""
-				                            "(Single-Threaded)";
+				table_function.extra_info = "(Single-Threaded)";
 			} else {
 				table_function.extra_info = "(Multi-Threaded)";
 			}

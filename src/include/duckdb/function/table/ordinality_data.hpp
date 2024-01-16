@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/function/table/ordinality_data.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #pragma once
 #include "duckdb/common/types/data_chunk.hpp"
 namespace duckdb {

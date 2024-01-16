@@ -235,8 +235,8 @@ void SQLLogicTestLogger::SplitMismatch(idx_t row_number, idx_t expected_column_c
 	PrintLineSep();
 }
 
-void SQLLogicTestLogger::WrongResultHash(QueryResult *expected_result, MaterializedQueryResult &result, string &hashval,
-                                         string expected_hash) {
+void SQLLogicTestLogger::WrongResultHash(QueryResult *expected_result, MaterializedQueryResult &result, const string &hashval,
+                                         const string expected_hash) {
 	PrintHeader("Expected result: \n");
 	if (expected_result) {
 		expected_result->Print();
@@ -248,7 +248,7 @@ void SQLLogicTestLogger::WrongResultHash(QueryResult *expected_result, Materiali
 	PrintSQL();
 	PrintLineSep();
 	PrintHeader("Expected result hash:");
-	PrintHeader(std::move(expected_hash));
+	PrintHeader(expected_hash);
 	PrintLineSep();
 	PrintHeader("Actual result hash:");
 	PrintHeader(hashval);
