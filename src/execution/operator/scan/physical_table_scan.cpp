@@ -86,7 +86,7 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	if (chunk.size() == 0) {
 		return SourceResultType::FINISHED;
 	} else {
-		state.ordinalityData.ord_index += chunk.size();
+		state.ordinalityData.idx += chunk.size();
 		return SourceResultType::HAVE_MORE_OUTPUT;
 	}
 }

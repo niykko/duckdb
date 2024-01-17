@@ -11,21 +11,21 @@
 namespace duckdb {
 struct OrdinalityData {
 	bool with_ordinality = false;
-	idx_t ordinality_column_id;
-	idx_t ord_index = 1;
-	bool ord_reset = false;
+	idx_t column_id;
+	idx_t idx = 1;
+	bool reset = false;
 	bool initialized = false;
 
 	void SetOrdinality(DataChunk &chunk, const vector<column_t> &column_ids) {
 		const idx_t ordinality = chunk.size();
 		if (ordinality > 0) {
-			if (ord_reset) {
-				ord_index = 1;
-				ord_reset = false;
+			if (reset) {
+				idx = 1;
+				reset = false;
 			}
-			D_ASSERT(chunk.data[ordinality_column_id].GetVectorType() == duckdb::VectorType::FLAT_VECTOR);
-			D_ASSERT(chunk.data[ordinality_column_id].GetType().id() == duckdb::LogicalType::INTEGER);
-			chunk.data[ordinality_column_id].Sequence(ord_index, 1, ordinality);
+			D_ASSERT(chunk.data[column_id].GetVectorType() == duckdb::VectorType::FLAT_VECTOR);
+			D_ASSERT(chunk.data[column_id].GetType().id() == duckdb::LogicalType::INTEGER);
+			chunk.data[column_id].Sequence(idx, 1, ordinality);
 		}
 	}
 };

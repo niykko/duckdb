@@ -68,7 +68,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 				state.ordinality_data.initialized = true;
 			}
 			state.ordinality_data.SetOrdinality(chunk, column_ids);
-			state.ordinality_data.ord_index += chunk.size();
+			state.ordinality_data.idx += chunk.size();
 		}
 		return result;
 	}
@@ -90,7 +90,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		state.input_chunk.SetCardinality(1);
 		state.row_index++;
 		state.new_row = false;
-		state.ordinality_data.ord_reset = true;
+		state.ordinality_data.reset = true;
 	}
 	// set up the output data in "chunk"
 	D_ASSERT(chunk.ColumnCount() > projected_input.size());
@@ -116,7 +116,7 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 		// we finished processing this row: move to the next row
 		state.new_row = true;
 	}
-	state.ordinality_data.ord_index += chunk.size();
+	state.ordinality_data.idx += chunk.size();
 	return OperatorResultType::HAVE_MORE_OUTPUT;
 }
 
