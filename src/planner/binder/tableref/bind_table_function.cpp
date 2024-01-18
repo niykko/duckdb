@@ -165,6 +165,9 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto") {
 			auto &csv_bind = bind_data->Cast<ReadCSVData>();
 			csv_bind.with_ordinality = table_function.ordinality_data.with_ordinality;
+			if (csv_bind.with_ordinality) {
+				csv_bind.single_threaded = true;
+			}
 			if (csv_bind.single_threaded) {
 				table_function.extra_info = "(Single-Threaded)";
 			} else {
