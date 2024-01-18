@@ -154,7 +154,7 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 		if (table_function.ordinality_data.with_ordinality) {
 			idx_t id = return_types.size();
 			D_ASSERT(id == return_names.size());
-			return_types.emplace_back(LogicalType::INTEGER);
+			return_types.emplace_back(LogicalType::BIGINT);
 			return_names.emplace_back("ordinality");
 			table_function.ordinality_data.column_id = id;
 		}

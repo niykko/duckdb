@@ -24,7 +24,7 @@ struct OrdinalityData {
 				reset = false;
 			}
 			D_ASSERT(chunk.data[column_id].GetVectorType() == duckdb::VectorType::FLAT_VECTOR);
-			D_ASSERT(chunk.data[column_id].GetType().id() == duckdb::LogicalType::INTEGER);
+			D_ASSERT(chunk.data[column_id].GetType().id() == duckdb::LogicalType::BIGINT);
 			chunk.data[column_id].Sequence(idx, 1, ordinality);
 		}
 	}
