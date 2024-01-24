@@ -5,6 +5,7 @@
 #include "duckdb/planner/expression/bound_conjunction_expression.hpp"
 #include "duckdb/transaction/transaction.hpp"
 #include "duckdb/function/table/ordinality_data.hpp"
+#include "duckdb/execution/operator/scan/csv/base_csv_reader.hpp"
 
 #include <utility>
 
@@ -51,6 +52,65 @@ public:
 			TableFunctionInitInput input(op.bind_data.get(), op.column_ids, op.projection_ids, op.table_filters.get());
 			local_state = op.function.init_local(context, input, gstate.global_state.get());
 		}
+
+/*		if (op.function.name == "read_csv_auto" || op.function.name == "read_csv") {
+			if (op.function.projection_pushdown) {
+				if (op.function.with_ordinality) {
+					ordinalityData.with_ordinality = false;
+					if (op.function.filter_prune) {
+						for (idx_t i = 0; i < op.projection_ids.size(); i++) {
+							const auto &column_id = op.column_ids[op.projection_ids[i]];
+							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+								ordinalityData.column_id = column_id;
+								ordinalityData.with_ordinality = true;
+								break;
+							}
+						}
+					} else {
+						for (idx_t i = 0; i < op.column_ids.size(); i++) {
+							const auto &column_id = op.column_ids[i];
+							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+								ordinalityData.column_id = i;
+								ordinalityData.with_ordinality = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}*/
+
+		if (op.function.with_ordinality) {
+			if (op.function.name == "read_csv_auto" || op.function.name == "read_csv") {
+				if (op.function.projection_pushdown) {
+					ordinalityData.with_ordinality = false;
+					if (op.function.filter_prune) {
+						for (idx_t i = 0; i < op.projection_ids.size(); i++) {
+							const auto &column_id = op.column_ids[op.projection_ids[i]];
+							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+								ordinalityData.column_id = column_id;
+								ordinalityData.with_ordinality = true;
+								break;
+							}
+						}
+					} else {
+						for (idx_t i = 0; i < op.column_ids.size(); i++) {
+							const auto &column_id = op.column_ids[i];
+							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+								ordinalityData.column_id = i;
+								ordinalityData.with_ordinality = true;
+								break;
+							}
+						}
+					}
+				}
+			} else {
+				ordinalityData.with_ordinality = true;
+				ordinalityData.column_id = op.bind_data->Cast<TableFunctionData>().original_ordinality_id;
+			}
+		}
+
+
 	}
 
 	unique_ptr<LocalTableFunctionState> local_state;
@@ -75,18 +135,14 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	function.function(context.client, data, chunk);
 
-	if (function.ordinality_data.with_ordinality) {
-		if (!state.ordinalityData.initialized) {
-			state.ordinalityData = function.ordinality_data;
-			state.ordinalityData.initialized = true;
-		}
-		state.ordinalityData.SetOrdinality(chunk, column_ids);
-	}
 
 	if (chunk.size() == 0) {
 		return SourceResultType::FINISHED;
 	} else {
-		state.ordinalityData.idx += chunk.size();
+		if (state.ordinalityData.with_ordinality) {
+			state.ordinalityData.SetOrdinality(chunk, column_ids);
+			state.ordinalityData.idx += chunk.size();
+		}
 		return SourceResultType::HAVE_MORE_OUTPUT;
 	}
 }

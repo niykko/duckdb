@@ -66,6 +66,8 @@ struct FunctionData {
 struct TableFunctionData : public FunctionData {
 	// used to pass on projections to table functions that support them. NB, can contain COLUMN_IDENTIFIER_ROW_ID
 	vector<idx_t> column_ids;
+	bool with_ordinality = false;
+	idx_t original_ordinality_id;
 
 	DUCKDB_API virtual ~TableFunctionData();
 

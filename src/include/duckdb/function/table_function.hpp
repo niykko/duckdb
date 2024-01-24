@@ -283,8 +283,8 @@ public:
 	bool filter_prune;
 	//! Additional function info, passed to the bind
 	shared_ptr<TableFunctionInfo> function_info;
-	//! Data for WITH ORDINALITY feature
-	OrdinalityData ordinality_data;
+	//! bool to check if WITH ORDINALITY feature is requested
+	bool with_ordinality = false;
 	//! bool to check whether or not WITH ORDINALITY feature has been implemented for this table function
 	bool supports_ordinality;
 

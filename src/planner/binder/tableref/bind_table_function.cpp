@@ -151,12 +151,13 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			}
 		}
 		bind_data = table_function.bind(context, bind_input, return_types, return_names);
-		if (table_function.ordinality_data.with_ordinality) {
-			idx_t id = return_types.size();
+		idx_t id = return_types.size();
+		auto &tbl_bind = bind_data->Cast<TableFunctionData>();
+		if (table_function.with_ordinality) {
 			D_ASSERT(id == return_names.size());
 			return_types.emplace_back(LogicalType::BIGINT);
 			return_names.emplace_back("ordinality");
-			table_function.ordinality_data.column_id = id;
+			tbl_bind.original_ordinality_id = id;
 		}
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();
@@ -164,8 +165,8 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 		}
 		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto") {
 			auto &csv_bind = bind_data->Cast<ReadCSVData>();
-			csv_bind.with_ordinality = table_function.ordinality_data.with_ordinality;
-			if (csv_bind.with_ordinality) {
+			tbl_bind.with_ordinality = table_function.with_ordinality;
+			if (tbl_bind.with_ordinality) {
 				csv_bind.single_threaded = true;
 			}
 			if (csv_bind.single_threaded) {
@@ -274,10 +275,10 @@ unique_ptr<BoundTableRef> Binder::Bind(TableFunctionRef &ref) {
 		throw BinderException(FormatError(ref, error));
 	}
 	auto table_function = function.functions.GetFunctionByOffset(best_function_idx);
-	if (ref.with_ordinality && !table_function.supports_ordinality) {
+	table_function.with_ordinality = ref.with_ordinality;
+	if (table_function.with_ordinality && !table_function.supports_ordinality) {
 		throw NotImplementedException("WITH ORDINALITY not implemented for " + ref.ToString());
 	}
-	table_function.ordinality_data.with_ordinality = ref.with_ordinality;
 	// now check the named parameters
 	BindNamedParameters(table_function.named_parameters, named_parameters, error_context, table_function.name);
 

@@ -98,7 +98,6 @@ struct ReadCSVData : public BaseCSVData {
 	//! State machines for sniffing becomes a major bottleneck.
 	CSVStateMachineCache state_machine_cache;
 
-	bool with_ordinality = false;
 
 	void Initialize(unique_ptr<BufferedCSVReader> &reader) {
 		this->initial_reader = std::move(reader);

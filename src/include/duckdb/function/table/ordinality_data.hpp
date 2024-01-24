@@ -14,7 +14,6 @@ struct OrdinalityData {
 	idx_t column_id;
 	idx_t idx = 1;
 	bool reset = false;
-	bool initialized = false;
 
 	void SetOrdinality(DataChunk &chunk, const vector<column_t> &column_ids) {
 		const idx_t ordinality = chunk.size();

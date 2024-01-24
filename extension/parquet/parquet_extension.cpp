@@ -61,6 +61,7 @@ struct ParquetReadBindData : public TableFunctionData {
 	ParquetOptions parquet_options;
 	MultiFileReaderBindData reader_bind;
 	bool with_ordinality = false;
+	idx_t original_ordinality_id;
 
 	void Initialize(shared_ptr<ParquetReader> reader) {
 		initial_reader = std::move(reader);
@@ -212,7 +213,7 @@ static void InitializeParquetReader(ParquetReader &reader, const ParquetReadBind
 	if (bind_data.parquet_options.schema.empty()) {
 		MultiFileReader::InitializeReader(reader, parquet_options.file_options, bind_data.reader_bind, bind_data.types,
 		                                  bind_data.names, global_column_ids, table_filters, bind_data.files[0],
-		                                  context, bind_data.with_ordinality);
+		                                  context, bind_data.with_ordinality, bind_data.original_ordinality_id);
 		return;
 	}
 
