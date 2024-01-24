@@ -32,7 +32,7 @@ public:
 	                                        OperatorState &state) const override;
 
 	bool ParallelOperator() const override {
-		return !bind_data->Cast<TableFunctionData>().with_ordinality;
+		return !function.with_ordinality;
 	}
 
 	bool RequiresFinalExecute() const override {

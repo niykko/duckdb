@@ -5,7 +5,6 @@
 #include "duckdb/planner/expression/bound_conjunction_expression.hpp"
 #include "duckdb/transaction/transaction.hpp"
 #include "duckdb/function/table/ordinality_data.hpp"
-#include "duckdb/execution/operator/scan/csv/base_csv_reader.hpp"
 
 #include <utility>
 
@@ -52,33 +51,6 @@ public:
 			TableFunctionInitInput input(op.bind_data.get(), op.column_ids, op.projection_ids, op.table_filters.get());
 			local_state = op.function.init_local(context, input, gstate.global_state.get());
 		}
-
-/*		if (op.function.name == "read_csv_auto" || op.function.name == "read_csv") {
-			if (op.function.projection_pushdown) {
-				if (op.function.with_ordinality) {
-					ordinalityData.with_ordinality = false;
-					if (op.function.filter_prune) {
-						for (idx_t i = 0; i < op.projection_ids.size(); i++) {
-							const auto &column_id = op.column_ids[op.projection_ids[i]];
-							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
-								ordinalityData.column_id = column_id;
-								ordinalityData.with_ordinality = true;
-								break;
-							}
-						}
-					} else {
-						for (idx_t i = 0; i < op.column_ids.size(); i++) {
-							const auto &column_id = op.column_ids[i];
-							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
-								ordinalityData.column_id = i;
-								ordinalityData.with_ordinality = true;
-								break;
-							}
-						}
-					}
-				}
-			}
-		}*/
 
 		if (op.function.with_ordinality) {
 			if (op.function.name == "read_csv_auto" || op.function.name == "read_csv") {
