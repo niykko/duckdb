@@ -287,6 +287,8 @@ public:
 	bool with_ordinality = false;
 	//! bool to check whether or not WITH ORDINALITY feature has been implemented for this table function
 	bool supports_ordinality;
+	//! column_id used to populate the ordinality column with data
+	idx_t original_ordinality_id;
 
 	DUCKDB_API bool Equal(const TableFunction &rhs) const;
 };

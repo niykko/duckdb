@@ -152,22 +152,22 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 		}
 		bind_data = table_function.bind(context, bind_input, return_types, return_names);
 		idx_t id = return_types.size();
-		auto &tbl_bind = bind_data->Cast<TableFunctionData>();
 		if (table_function.with_ordinality) {
 			D_ASSERT(id == return_names.size());
 			return_types.emplace_back(LogicalType::BIGINT);
 			return_names.emplace_back("ordinality");
-			tbl_bind.original_ordinality_id = id;
+			table_function.original_ordinality_id = id;
 		}
-		tbl_bind.with_ordinality = table_function.with_ordinality;
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();
 			arrow_bind.external_dependency = std::move(external_dependency);
 		}
 		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto") {
 			auto &csv_bind = bind_data->Cast<ReadCSVData>();
-			if (tbl_bind.with_ordinality) {
+			if (table_function.with_ordinality) {
 				csv_bind.single_threaded = true;
+				csv_bind.original_ordinality_id = id;
+				csv_bind.with_ordinality = true;
 			}
 			if (csv_bind.single_threaded) {
 				table_function.extra_info = "(Single-Threaded)";

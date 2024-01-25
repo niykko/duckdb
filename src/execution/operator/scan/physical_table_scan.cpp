@@ -78,7 +78,7 @@ public:
 				}
 			} else {
 				ordinalityData.with_ordinality = true;
-				ordinalityData.column_id = op.bind_data->Cast<TableFunctionData>().original_ordinality_id;
+				ordinalityData.column_id = op.function.original_ordinality_id;
 			}
 		}
 

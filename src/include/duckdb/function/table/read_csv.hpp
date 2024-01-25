@@ -97,7 +97,8 @@ struct ReadCSVData : public BaseCSVData {
 	//! We cache them because when reading very small csv files, the cost of creating all the possible
 	//! State machines for sniffing becomes a major bottleneck.
 	CSVStateMachineCache state_machine_cache;
-
+	bool with_ordinality = false;
+	idx_t original_ordinality_id;
 
 	void Initialize(unique_ptr<BufferedCSVReader> &reader) {
 		this->initial_reader = std::move(reader);
