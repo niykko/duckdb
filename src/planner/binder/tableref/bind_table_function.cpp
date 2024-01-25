@@ -159,13 +159,13 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			return_names.emplace_back("ordinality");
 			tbl_bind.original_ordinality_id = id;
 		}
+		tbl_bind.with_ordinality = table_function.with_ordinality;
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();
 			arrow_bind.external_dependency = std::move(external_dependency);
 		}
 		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto") {
 			auto &csv_bind = bind_data->Cast<ReadCSVData>();
-			tbl_bind.with_ordinality = table_function.with_ordinality;
 			if (tbl_bind.with_ordinality) {
 				csv_bind.single_threaded = true;
 			}
