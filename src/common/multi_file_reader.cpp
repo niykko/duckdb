@@ -276,7 +276,8 @@ void MultiFileReader::CreateNameMapping(const string &file_name, const vector<Lo
 		// not constant - look up the column in the name map
 		auto global_id = global_column_ids[i];
 		if (with_ordinality && global_id == original_ordinality_id) {
-			// this is the column (added during binding) used to display ordinality information and is therefore not found in the file
+			// this is the column (added during binding) used to display ordinality information and is therefore not
+			// found in the file
 			continue;
 		}
 		if (global_id >= global_types.size()) {
@@ -320,7 +321,8 @@ void MultiFileReader::CreateMapping(const string &file_name, const vector<Logica
                                     const vector<string> &local_names, const vector<LogicalType> &global_types,
                                     const vector<string> &global_names, const vector<column_t> &global_column_ids,
                                     optional_ptr<TableFilterSet> filters, MultiFileReaderData &reader_data,
-                                    const string &initial_file, const bool with_ordinality, const idx_t original_ordinality_id) {
+                                    const string &initial_file, const bool with_ordinality,
+                                    const idx_t original_ordinality_id) {
 	CreateNameMapping(file_name, local_types, local_names, global_types, global_names, global_column_ids, reader_data,
 	                  initial_file, with_ordinality, original_ordinality_id);
 	CreateFilterMap(global_types, filters, reader_data);

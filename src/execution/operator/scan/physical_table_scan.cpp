@@ -81,8 +81,6 @@ public:
 				ordinalityData.column_id = op.function.original_ordinality_id;
 			}
 		}
-
-
 	}
 
 	unique_ptr<LocalTableFunctionState> local_state;
@@ -106,7 +104,6 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	function.function(context.client, data, chunk);
-
 
 	if (chunk.size() == 0) {
 		return SourceResultType::FINISHED;

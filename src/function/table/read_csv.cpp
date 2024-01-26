@@ -462,7 +462,8 @@ bool ParallelCSVGlobalState::Next(ClientContext &context, const ReadCSVData &bin
 		reader->options.file_path = current_file_path;
 		MultiFileReader::InitializeReader(*reader, bind_data.options.file_options, bind_data.reader_bind,
 		                                  bind_data.return_types, bind_data.return_names, column_ids, nullptr,
-		                                  bind_data.files.front(), context, bind_data.with_ordinality, bind_data.original_ordinality_id);
+		                                  bind_data.files.front(), context, bind_data.with_ordinality,
+		                                  bind_data.original_ordinality_id);
 	} else {
 		// update the current reader
 		reader->SetBufferRead(std::move(result));
@@ -698,7 +699,8 @@ private:
 			}
 			MultiFileReader::InitializeReader(*result, bind_data.options.file_options, bind_data.reader_bind,
 			                                  bind_data.return_types, bind_data.return_names, column_ids, nullptr,
-			                                  bind_data.files.front(), context, bind_data.with_ordinality, bind_data.original_ordinality_id);
+			                                  bind_data.files.front(), context, bind_data.with_ordinality,
+			                                  bind_data.original_ordinality_id);
 		}
 		total_size = result->file_handle->FileSize();
 		return result;
@@ -741,14 +743,16 @@ static unique_ptr<GlobalTableFunctionState> SingleThreadedCSVInit(ClientContext 
 	}
 	MultiFileReader::InitializeReader(*result->initial_reader, bind_data.options.file_options, bind_data.reader_bind,
 	                                  bind_data.return_types, bind_data.return_names, input.column_ids, input.filters,
-	                                  bind_data.files.front(), context, bind_data.with_ordinality, bind_data.original_ordinality_id);
+	                                  bind_data.files.front(), context, bind_data.with_ordinality,
+	                                  bind_data.original_ordinality_id);
 	for (auto &reader : bind_data.union_readers) {
 		if (!reader) {
 			continue;
 		}
 		MultiFileReader::InitializeReader(*reader, bind_data.options.file_options, bind_data.reader_bind,
 		                                  bind_data.return_types, bind_data.return_names, input.column_ids,
-		                                  input.filters, bind_data.files.front(), context, bind_data.with_ordinality, bind_data.original_ordinality_id);
+		                                  input.filters, bind_data.files.front(), context, bind_data.with_ordinality,
+		                                  bind_data.original_ordinality_id);
 	}
 	result->column_ids = input.column_ids;
 
@@ -971,7 +975,7 @@ TableFunction ReadCSVTableFunction::GetFunction() {
 TableFunction ReadCSVTableFunction::GetAutoFunction() {
 	auto read_csv_auto = ReadCSVTableFunction::GetFunction();
 	read_csv_auto.name = "read_csv_auto";
-    read_csv_auto.bind = ReadCSVBind;
+	read_csv_auto.bind = ReadCSVBind;
 	read_csv_auto.supports_ordinality = true;
 	return read_csv_auto;
 }
