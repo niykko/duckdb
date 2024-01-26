@@ -91,3 +91,17 @@ SELECT * from generate_series(1, 6, 2) with ordinality;
 5	3
 
 
+statement ok
+create table testing (a int, b int, c varchar, d int);
+
+statement ok
+insert into testing select range, 5-range, 'string', ordinality from range(5) with ordinality;
+
+query IIII
+select * from testing;
+----
+0	5	string	1
+1	4	string	2
+2	3	string	3
+3	2	string	4
+4	1	string	5

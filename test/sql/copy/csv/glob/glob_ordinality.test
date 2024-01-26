@@ -1,0 +1,10 @@
+# name: test/sql/copy/csv/glob/glob_ordinality.test
+# description: Test glob with "with ordinality"
+# group: [glob]
+
+query II
+SELECT col = 'test\sql\copy\csv\data\glob\a2\a2.csv' OR col = 'test/sql/copy/csv/data/glob/a2/a2.csv', o FROM glob('test/sql/copy/csv/data/glob/a?/a2.csv') with ordinality AS _(col,o);
+----
+true	1
+
+
