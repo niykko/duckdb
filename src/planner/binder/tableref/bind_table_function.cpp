@@ -162,17 +162,12 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();
 			arrow_bind.external_dependency = std::move(external_dependency);
 		}
+
 		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto") {
 			auto &csv_bind = bind_data->Cast<ReadCSVData>();
 			if (table_function.with_ordinality) {
-				csv_bind.single_threaded = true;
 				csv_bind.original_ordinality_id = id;
 				csv_bind.with_ordinality = true;
-			}
-			if (csv_bind.single_threaded) {
-				table_function.extra_info = "(Single-Threaded)";
-			} else {
-				table_function.extra_info = "(Multi-Threaded)";
 			}
 		}
 	} else {
