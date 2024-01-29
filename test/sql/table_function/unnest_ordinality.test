@@ -52,7 +52,7 @@ NULL	3
 [4, 5, 6, 7]	4
 
 # nested nested
-query I
+query II
 SELECT i, ordinality FROM UNNEST([{'a': [1, 2, 3], 'b': [4, 5, 6]}, {'a': [4, 5], 'b': [7, 8, 9, 10]}]) with ordinality AS tbl(i);
 ----
 {'a': [1, 2, 3], 'b': [4, 5, 6]}	1
@@ -66,12 +66,12 @@ SELECT COUNT(*), COUNT(ordinality) FROM UNNEST((SELECT LIST(range) FROM range(40
 4000	4000
 
 # null
-query I
+query II
 SELECT i, ordinality FROM UNNEST(NULL::INT[]) with ordinality AS tbl(i);
 ----
 
 # empty list
-query I
+query II
 SELECT i, ordinality FROM UNNEST([]::INT[]) with ordinality AS tbl(i);
 ----
 
