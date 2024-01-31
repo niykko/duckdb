@@ -60,8 +60,6 @@ struct ParquetReadBindData : public TableFunctionData {
 	idx_t initial_file_row_groups;
 	ParquetOptions parquet_options;
 	MultiFileReaderBindData reader_bind;
-	bool with_ordinality = false;
-	idx_t original_ordinality_id;
 
 	void Initialize(shared_ptr<ParquetReader> reader) {
 		initial_reader = std::move(reader);
@@ -323,6 +321,7 @@ public:
 		table_function.filter_pushdown = true;
 		table_function.filter_prune = true;
 		table_function.pushdown_complex_filter = ParquetComplexFilterPushdown;
+		table_function.supports_ordinality = true;
 		return MultiFileReader::CreateFunctionSet(table_function);
 	}
 

@@ -20,6 +20,7 @@
 #include "duckdb/catalog/catalog_entry/table_function_catalog_entry.hpp"
 #include "duckdb/catalog/catalog_entry/table_catalog_entry.hpp"
 #include "duckdb/function/table/read_csv.hpp"
+#include "../extension/parquet/include/parquet_extension.hpp"
 
 namespace duckdb {
 
@@ -163,11 +164,12 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			arrow_bind.external_dependency = std::move(external_dependency);
 		}
 
-		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto") {
-			auto &csv_bind = bind_data->Cast<ReadCSVData>();
+		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto"
+				|| table_function.name == "parquet_scan" || table_function.name == "read_parquet") {
+			auto &scan_bind = bind_data->Cast<TableFunctionData>();
 			if (table_function.with_ordinality) {
-				csv_bind.original_ordinality_id = id;
-				csv_bind.with_ordinality = true;
+				scan_bind.original_ordinality_id = id;
+				scan_bind.with_ordinality = true;
 			}
 		}
 	} else {
