@@ -94,8 +94,6 @@ struct ReadCSVData : public BaseCSVData {
 	//! Reader bind data
 	MultiFileReaderBindData reader_bind;
 	vector<ColumnInfo> column_info;
-	bool with_ordinality = false;
-	idx_t original_ordinality_id;
 
 	void Initialize(unique_ptr<CSVFileScan> &reader) {
 		this->initial_reader = std::move(reader);
