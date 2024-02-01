@@ -2,6 +2,9 @@
 # description: Test generate_series/range function with "with ordinality"
 # group: [table_function]
 
+statement ok
+PRAGMA enable_verification
+
 # range with a single parameter
 query II
 SELECT * from range(3) with ordinality;

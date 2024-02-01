@@ -2,6 +2,9 @@
 # description: Table functions
 # group: [table_function]
 
+statement ok
+PRAGMA enable_verification
+
 # lateral join with unnest
 query III
 SELECT * FROM (SELECT ARRAY[1, 2, 3]) t(l), UNNEST(l) with ordinality t2(k) ORDER BY k;
