@@ -77,9 +77,10 @@ RelationStats RelationStatisticsHelper::ExtractGetStats(LogicalGet &get, ClientC
 	}
 
 	// first push back basic distinct counts for each column (if we have them).
+	auto &bind = get.bind_data->Cast<TableFunctionData>();
 	for (idx_t i = 0; i < get.column_ids.size(); i++) {
 		bool have_distinct_count_stats = false;
-		if (get.function.with_ordinality && i == get.function.original_ordinality_id) {
+		if (bind.with_ordinality && i == bind.original_ordinality_id) {
 			continue;
 		}
 		if (get.function.statistics) {

@@ -40,8 +40,9 @@ unique_ptr<NodeStatistics> StatisticsPropagator::PropagateStatistics(LogicalGet 
 		return std::move(node_stats);
 	}
 	idx_t num_column_ids = get.column_ids.size();
+	auto &bind = get.bind_data->Cast<TableFunctionData>();
 	for (idx_t i = 0; i < num_column_ids; i++) {
-		if(get.function.with_ordinality && i == get.function.original_ordinality_id) {
+		if(bind.with_ordinality && i == bind.original_ordinality_id) {
 			continue;
 		}
 		auto stats = get.function.statistics(context, get.bind_data.get(), get.column_ids[i]);

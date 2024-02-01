@@ -157,21 +157,16 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			D_ASSERT(id == return_names.size());
 			return_types.emplace_back(LogicalType::BIGINT);
 			return_names.emplace_back("ordinality");
-			table_function.original_ordinality_id = id;
+			auto &scan_bind = bind_data->Cast<TableFunctionData>();
+			scan_bind.original_ordinality_id = id;
+			scan_bind.with_ordinality = true;
 		}
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();
 			arrow_bind.external_dependency = std::move(external_dependency);
 		}
 
-		if (table_function.name == "read_csv" || table_function.name == "read_csv_auto"
-				|| table_function.name == "parquet_scan" || table_function.name == "read_parquet") {
-			auto &scan_bind = bind_data->Cast<TableFunctionData>();
-			if (table_function.with_ordinality) {
-				scan_bind.original_ordinality_id = id;
-				scan_bind.with_ordinality = true;
-			}
-		}
+
 	} else {
 		throw InvalidInputException("Cannot call function \"%s\" directly - it has no bind function",
 		                            table_function.name);

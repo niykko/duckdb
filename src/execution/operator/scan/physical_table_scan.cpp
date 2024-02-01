@@ -51,8 +51,8 @@ public:
 			TableFunctionInitInput input(op.bind_data.get(), op.column_ids, op.projection_ids, op.table_filters.get());
 			local_state = op.function.init_local(context, input, gstate.global_state.get());
 		}
-
-		if (op.function.with_ordinality) {
+		auto &bind = op.bind_data->Cast<TableFunctionData>();
+		if (bind.with_ordinality) {
 			if (op.function.name == "read_csv_auto" || op.function.name == "read_csv") {
 				if (op.function.projection_pushdown) {
 					ordinalityData.with_ordinality = false;
@@ -78,7 +78,7 @@ public:
 				}
 			} else {
 				ordinalityData.with_ordinality = true;
-				ordinalityData.column_id = op.function.original_ordinality_id;
+				ordinalityData.column_id = bind.original_ordinality_id;
 			}
 		}
 	}
