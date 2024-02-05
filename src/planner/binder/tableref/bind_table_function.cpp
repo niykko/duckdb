@@ -21,6 +21,7 @@
 #include "duckdb/catalog/catalog_entry/table_catalog_entry.hpp"
 #include "duckdb/function/table/read_csv.hpp"
 #include "../extension/parquet/include/parquet_extension.hpp"
+#include "duckdb/function/function.hpp"
 
 namespace duckdb {
 
