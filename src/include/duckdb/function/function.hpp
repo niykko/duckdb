@@ -50,6 +50,8 @@ struct FunctionData {
 	DUCKDB_API virtual unique_ptr<FunctionData> Copy() const = 0;
 	DUCKDB_API virtual bool Equals(const FunctionData &other) const = 0;
 	DUCKDB_API static bool Equals(const FunctionData *left, const FunctionData *right);
+	bool with_ordinality = false;
+	idx_t original_ordinality_id;
 
 	template <class TARGET>
 	TARGET &Cast() {
@@ -71,8 +73,6 @@ struct FunctionData {
 struct TableFunctionData : public FunctionData {
 	// used to pass on projections to table functions that support them. NB, can contain COLUMN_IDENTIFIER_ROW_ID
 	vector<idx_t> column_ids;
-	bool with_ordinality = false;
-	idx_t original_ordinality_id;
 
 	DUCKDB_API virtual ~TableFunctionData();
 

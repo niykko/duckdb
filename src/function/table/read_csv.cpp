@@ -23,9 +23,6 @@
 #include "duckdb/parser/expression/function_expression.hpp"
 #include "duckdb/parser/tableref/table_function_ref.hpp"
 #include "duckdb/planner/operator/logical_get.hpp"
-#include "duckdb/execution/operator/csv_scanner/table_function/csv_file_scanner.hpp"
-#include "duckdb/execution/operator/csv_scanner/scanner/base_scanner.hpp"
-#include "duckdb/execution/operator/csv_scanner/scanner/string_value_scanner.hpp"
 
 #include <limits>
 

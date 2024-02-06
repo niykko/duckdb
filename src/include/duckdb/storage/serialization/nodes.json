@@ -699,16 +699,6 @@
         "id": 108,
         "name": "column_info",
         "type": "vector<ColumnInfo>"
-      },
-      {
-        "id": 109,
-        "name": "with_ordinality",
-        "type": "bool"
-      },
-      {
-        "id": 110,
-        "name": "original_ordinality_id",
-        "type": "idx_t"
       }
     ]
   },

@@ -52,43 +52,40 @@ public:
 			local_state = op.function.init_local(context, input, gstate.global_state.get());
 		}
 
-		if (op.bind_data) {
-			auto &bind = op.bind_data->Cast<TableFunctionData>();
-			if (bind.with_ordinality) {
-				if (op.function.name == "read_csv_auto" || op.function.name == "read_csv" ||
-				    op.function.name == "read_parquet" || op.function.name == "parquet_scan") {
-					if (op.function.projection_pushdown) {
-						ordinalityData.with_ordinality = false;
-						if (op.function.filter_prune) {
-							for (idx_t i = 0; i < op.projection_ids.size(); i++) {
-								const auto &column_id = op.column_ids[op.projection_ids[i]];
-								if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
-									ordinalityData.column_id = i;
-									ordinalityData.with_ordinality = true;
-									break;
-								}
+		if (op.bind_data->with_ordinality) {
+			if (op.function.name == "read_csv_auto" || op.function.name == "read_csv" ||
+			    op.function.name == "read_parquet" || op.function.name == "parquet_scan") {
+				if (op.function.projection_pushdown) {
+					ordinality_data.with_ordinality = false;
+					if (op.function.filter_prune) {
+						for (idx_t i = 0; i < op.projection_ids.size(); i++) {
+							const auto &column_id = op.column_ids[op.projection_ids[i]];
+							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+								ordinality_data.column_id = i;
+								ordinality_data.with_ordinality = true;
+								break;
 							}
-						} else {
-							for (idx_t i = 0; i < op.column_ids.size(); i++) {
-								const auto &column_id = op.column_ids[i];
-								if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
-									ordinalityData.column_id = i;
-									ordinalityData.with_ordinality = true;
-									break;
-								}
+						}
+					} else {
+						for (idx_t i = 0; i < op.column_ids.size(); i++) {
+							const auto &column_id = op.column_ids[i];
+							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+								ordinality_data.column_id = i;
+								ordinality_data.with_ordinality = true;
+								break;
 							}
 						}
 					}
-				} else {
-					ordinalityData.with_ordinality = true;
-					ordinalityData.column_id = bind.original_ordinality_id;
 				}
+			} else {
+				ordinality_data.with_ordinality = true;
+				ordinality_data.column_id = op.bind_data->original_ordinality_id;
 			}
 		}
 	}
 
 	unique_ptr<LocalTableFunctionState> local_state;
-	OrdinalityData ordinalityData;
+	OrdinalityData ordinality_data;
 };
 
 unique_ptr<LocalSourceState> PhysicalTableScan::GetLocalSourceState(ExecutionContext &context,
@@ -112,9 +109,9 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	if (chunk.size() == 0) {
 		return SourceResultType::FINISHED;
 	} else {
-		if (state.ordinalityData.with_ordinality) {
-			state.ordinalityData.SetOrdinality(chunk, column_ids);
-			state.ordinalityData.idx += chunk.size();
+		if (state.ordinality_data.with_ordinality) {
+			state.ordinality_data.SetOrdinality(chunk, column_ids);
+			state.ordinality_data.idx += chunk.size();
 		}
 		return SourceResultType::HAVE_MORE_OUTPUT;
 	}

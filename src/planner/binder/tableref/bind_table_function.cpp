@@ -156,9 +156,8 @@ Binder::BindTableFunctionInternal(TableFunction &table_function, const string &f
 			D_ASSERT(id == return_names.size());
 			return_types.emplace_back(LogicalType::BIGINT);
 			return_names.emplace_back("ordinality");
-			auto &scan_bind = bind_data->Cast<TableFunctionData>();
-			scan_bind.original_ordinality_id = id;
-			scan_bind.with_ordinality = true;
+			bind_data->original_ordinality_id = id;
+			bind_data->with_ordinality = true;
 		}
 		if (table_function.name == "pandas_scan" || table_function.name == "arrow_scan") {
 			auto &arrow_bind = bind_data->Cast<PyTableFunctionData>();

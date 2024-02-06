@@ -385,8 +385,6 @@ void ReadCSVData::Serialize(Serializer &serializer) const {
 	serializer.WriteProperty<CSVReaderOptions>(106, "options", options);
 	serializer.WriteProperty<MultiFileReaderBindData>(107, "reader_bind", reader_bind);
 	serializer.WritePropertyWithDefault<vector<ColumnInfo>>(108, "column_info", column_info);
-	serializer.WritePropertyWithDefault<bool>(109, "with_ordinality", with_ordinality);
-	serializer.WritePropertyWithDefault<idx_t>(110, "original_ordinality_id", original_ordinality_id);
 }
 
 unique_ptr<ReadCSVData> ReadCSVData::Deserialize(Deserializer &deserializer) {
@@ -400,8 +398,6 @@ unique_ptr<ReadCSVData> ReadCSVData::Deserialize(Deserializer &deserializer) {
 	deserializer.ReadProperty<CSVReaderOptions>(106, "options", result->options);
 	deserializer.ReadProperty<MultiFileReaderBindData>(107, "reader_bind", result->reader_bind);
 	deserializer.ReadPropertyWithDefault<vector<ColumnInfo>>(108, "column_info", result->column_info);
-	deserializer.ReadPropertyWithDefault<bool>(109, "with_ordinality", result->with_ordinality);
-	deserializer.ReadPropertyWithDefault<idx_t>(110, "original_ordinality_id", result->original_ordinality_id);
 	return result;
 }
 
