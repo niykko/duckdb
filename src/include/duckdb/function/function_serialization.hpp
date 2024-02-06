@@ -76,8 +76,8 @@ public:
 			result->with_ordinality = deserializer.ReadPropertyWithDefault<bool>(505, "with_ordinality", false);
 			result->original_ordinality_id =
 			    deserializer.ReadPropertyWithDefault<idx_t>(506, "original_ordinality_id", 0);
-			return result;
 		}
+		return result;
 	}
 
 	template <class FUNC, class CATALOG_ENTRY>
