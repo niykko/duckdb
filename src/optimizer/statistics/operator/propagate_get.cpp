@@ -39,16 +39,19 @@ unique_ptr<NodeStatistics> StatisticsPropagator::PropagateStatistics(LogicalGet 
 		// no column statistics to get
 		return std::move(node_stats);
 	}
+
 	idx_t num_column_ids = get.column_ids.size();
-	auto &bind = get.bind_data->Cast<TableFunctionData>();
-	for (idx_t i = 0; i < num_column_ids; i++) {
-		if(bind.with_ordinality && get.column_ids[i] == bind.original_ordinality_id) {
-			continue;
-		}
-		auto stats = get.function.statistics(context, get.bind_data.get(), get.column_ids[i]);
-		if (stats) {
-			ColumnBinding binding(get.table_index, i);
-			statistics_map.insert(make_pair(binding, std::move(stats)));
+	if (get.bind_data) {
+		auto &bind = get.bind_data->Cast<TableFunctionData>();
+		for (idx_t i = 0; i < num_column_ids; i++) {
+			if (bind.with_ordinality && get.column_ids[i] == bind.original_ordinality_id) {
+				continue;
+			}
+			auto stats = get.function.statistics(context, get.bind_data.get(), get.column_ids[i]);
+			if (stats) {
+				ColumnBinding binding(get.table_index, i);
+				statistics_map.insert(make_pair(binding, std::move(stats)));
+			}
 		}
 	}
 	// push table filters into the statistics

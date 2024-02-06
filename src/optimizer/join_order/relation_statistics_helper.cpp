@@ -77,32 +77,35 @@ RelationStats RelationStatisticsHelper::ExtractGetStats(LogicalGet &get, ClientC
 	}
 
 	// first push back basic distinct counts for each column (if we have them).
-	auto &bind = get.bind_data->Cast<TableFunctionData>();
-	for (idx_t i = 0; i < get.column_ids.size(); i++) {
-		bool have_distinct_count_stats = false;
-		if (bind.with_ordinality && get.column_ids[i] == bind.original_ordinality_id) {
-			continue;
-		}
-		if (get.function.statistics) {
-			column_statistics = get.function.statistics(context, get.bind_data.get(), get.column_ids[i]);
-			if (column_statistics && have_catalog_table_statistics) {
-				auto column_distinct_count = DistinctCount({column_statistics->GetDistinctCount(), true});
+
+	if (get.bind_data) {
+		auto &bind = get.bind_data->Cast<TableFunctionData>();
+		for (idx_t i = 0; i < get.column_ids.size(); i++) {
+			bool have_distinct_count_stats = false;
+			if (bind.with_ordinality && get.column_ids[i] == bind.original_ordinality_id) {
+				continue;
+			}
+			if (get.function.statistics) {
+				column_statistics = get.function.statistics(context, get.bind_data.get(), get.column_ids[i]);
+				if (column_statistics && have_catalog_table_statistics) {
+					auto column_distinct_count = DistinctCount({column_statistics->GetDistinctCount(), true});
+					return_stats.column_distinct_count.push_back(column_distinct_count);
+					return_stats.column_names.push_back(name + "." + get.names.at(get.column_ids.at(i)));
+					have_distinct_count_stats = true;
+				}
+			}
+			if (!have_distinct_count_stats) {
+				// currently treating the cardinality as the distinct count.
+				// the cardinality estimator will update these distinct counts based
+				// on the extra columns that are joined on.
+				auto column_distinct_count = DistinctCount({cardinality_after_filters, false});
 				return_stats.column_distinct_count.push_back(column_distinct_count);
-				return_stats.column_names.push_back(name + "." + get.names.at(get.column_ids.at(i)));
-				have_distinct_count_stats = true;
+				auto column_name = string("column");
+				if (get.column_ids.at(i) < get.names.size()) {
+					column_name = get.names.at(get.column_ids.at(i));
+				}
+				return_stats.column_names.push_back(get.GetName() + "." + column_name);
 			}
-		}
-		if (!have_distinct_count_stats) {
-			// currently treating the cardinality as the distinct count.
-			// the cardinality estimator will update these distinct counts based
-			// on the extra columns that are joined on.
-			auto column_distinct_count = DistinctCount({cardinality_after_filters, false});
-			return_stats.column_distinct_count.push_back(column_distinct_count);
-			auto column_name = string("column");
-			if (get.column_ids.at(i) < get.names.size()) {
-				column_name = get.names.at(get.column_ids.at(i));
-			}
-			return_stats.column_names.push_back(get.GetName() + "." + column_name);
 		}
 	}
 

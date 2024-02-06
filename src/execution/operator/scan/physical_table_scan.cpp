@@ -51,34 +51,38 @@ public:
 			TableFunctionInitInput input(op.bind_data.get(), op.column_ids, op.projection_ids, op.table_filters.get());
 			local_state = op.function.init_local(context, input, gstate.global_state.get());
 		}
-		auto &bind = op.bind_data->Cast<TableFunctionData>();
-		if (bind.with_ordinality) {
-			if (op.function.name == "read_csv_auto" || op.function.name == "read_csv" || op.function.name == "read_parquet" || op.function.name == "parquet_scan") {
-				if (op.function.projection_pushdown) {
-					ordinalityData.with_ordinality = false;
-					if (op.function.filter_prune) {
-						for (idx_t i = 0; i < op.projection_ids.size(); i++) {
-							const auto &column_id = op.column_ids[op.projection_ids[i]];
-							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
-								ordinalityData.column_id = i;
-								ordinalityData.with_ordinality = true;
-								break;
+
+		if (op.bind_data) {
+			auto &bind = op.bind_data->Cast<TableFunctionData>();
+			if (bind.with_ordinality) {
+				if (op.function.name == "read_csv_auto" || op.function.name == "read_csv" ||
+					op.function.name == "read_parquet" || op.function.name == "parquet_scan") {
+					if (op.function.projection_pushdown) {
+						ordinalityData.with_ordinality = false;
+						if (op.function.filter_prune) {
+							for (idx_t i = 0; i < op.projection_ids.size(); i++) {
+								const auto &column_id = op.column_ids[op.projection_ids[i]];
+								if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+									ordinalityData.column_id = i;
+									ordinalityData.with_ordinality = true;
+									break;
+								}
 							}
-						}
-					} else {
-						for (idx_t i = 0; i < op.column_ids.size(); i++) {
-							const auto &column_id = op.column_ids[i];
-							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
-								ordinalityData.column_id = i;
-								ordinalityData.with_ordinality = true;
-								break;
+						} else {
+							for (idx_t i = 0; i < op.column_ids.size(); i++) {
+								const auto &column_id = op.column_ids[i];
+								if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+									ordinalityData.column_id = i;
+									ordinalityData.with_ordinality = true;
+									break;
+								}
 							}
 						}
 					}
+				} else {
+					ordinalityData.with_ordinality = true;
+					ordinalityData.column_id = bind.original_ordinality_id;
 				}
-			} else {
-				ordinalityData.with_ordinality = true;
-				ordinalityData.column_id = bind.original_ordinality_id;
 			}
 		}
 	}
