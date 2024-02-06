@@ -28,6 +28,8 @@ public:
 		if (has_serialize) {
 			serializer.WriteObject(504, "function_data",
 			                       [&](Serializer &obj) { function.serialize(obj, bind_info, function); });
+			serializer.WriteProperty(505, "with_ordinality", bind_info->with_ordinality);
+			serializer.WriteProperty(506, "original_ordinality_id", bind_info->original_ordinality_id);
 			D_ASSERT(function.deserialize);
 		}
 	}
@@ -68,6 +70,8 @@ public:
 		unique_ptr<FunctionData> result;
 		deserializer.ReadObject(504, "function_data",
 		                        [&](Deserializer &obj) { result = function.deserialize(obj, function); });
+		result->with_ordinality = deserializer.ReadProperty<bool>(505, "with_ordinality");
+		result->original_ordinality_id = deserializer.ReadProperty<idx_t>(506, "original_ordinality_id");
 		return result;
 	}
 
