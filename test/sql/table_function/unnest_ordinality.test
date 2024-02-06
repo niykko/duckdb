@@ -115,3 +115,8 @@ EXECUTE v1([1,2,3,4,5]);
 3	3
 4	4
 5	5
+
+statement error
+SELECT UNNEST([1,2,3]) with ordinality
+----
+Parser Error: syntax error at or near "with"
