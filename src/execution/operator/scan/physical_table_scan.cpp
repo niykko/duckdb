@@ -52,34 +52,36 @@ public:
 			local_state = op.function.init_local(context, input, gstate.global_state.get());
 		}
 
-		if (op.bind_data->with_ordinality) {
-			if (op.function.name == "read_csv_auto" || op.function.name == "read_csv" ||
-			    op.function.name == "read_parquet" || op.function.name == "parquet_scan") {
-				if (op.function.projection_pushdown) {
-					ordinality_data.with_ordinality = false;
-					if (op.function.filter_prune) {
-						for (idx_t i = 0; i < op.projection_ids.size(); i++) {
-							const auto &column_id = op.column_ids[op.projection_ids[i]];
-							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
-								ordinality_data.column_id = i;
-								ordinality_data.with_ordinality = true;
-								break;
+		if (op.bind_data) {
+			if (op.bind_data->with_ordinality) {
+				if (op.function.name == "read_csv_auto" || op.function.name == "read_csv" ||
+				    op.function.name == "read_parquet" || op.function.name == "parquet_scan") {
+					if (op.function.projection_pushdown) {
+						ordinality_data.with_ordinality = false;
+						if (op.function.filter_prune) {
+							for (idx_t i = 0; i < op.projection_ids.size(); i++) {
+								const auto &column_id = op.column_ids[op.projection_ids[i]];
+								if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+									ordinality_data.column_id = i;
+									ordinality_data.with_ordinality = true;
+									break;
+								}
 							}
-						}
-					} else {
-						for (idx_t i = 0; i < op.column_ids.size(); i++) {
-							const auto &column_id = op.column_ids[i];
-							if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
-								ordinality_data.column_id = i;
-								ordinality_data.with_ordinality = true;
-								break;
+						} else {
+							for (idx_t i = 0; i < op.column_ids.size(); i++) {
+								const auto &column_id = op.column_ids[i];
+								if (column_id < op.names.size() && op.names[column_id] == "ordinality") {
+									ordinality_data.column_id = i;
+									ordinality_data.with_ordinality = true;
+									break;
+								}
 							}
 						}
 					}
+				} else {
+					ordinality_data.with_ordinality = true;
+					ordinality_data.column_id = op.bind_data->original_ordinality_id;
 				}
-			} else {
-				ordinality_data.with_ordinality = true;
-				ordinality_data.column_id = op.bind_data->original_ordinality_id;
 			}
 		}
 	}
