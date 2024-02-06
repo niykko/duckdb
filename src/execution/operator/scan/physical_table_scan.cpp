@@ -56,7 +56,7 @@ public:
 			auto &bind = op.bind_data->Cast<TableFunctionData>();
 			if (bind.with_ordinality) {
 				if (op.function.name == "read_csv_auto" || op.function.name == "read_csv" ||
-					op.function.name == "read_parquet" || op.function.name == "parquet_scan") {
+				    op.function.name == "read_parquet" || op.function.name == "parquet_scan") {
 					if (op.function.projection_pushdown) {
 						ordinalityData.with_ordinality = false;
 						if (op.function.filter_prune) {
