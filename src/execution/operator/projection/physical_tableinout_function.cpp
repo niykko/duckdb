@@ -59,9 +59,8 @@ OperatorResultType PhysicalTableInOutFunction::Execute(ExecutionContext &context
 	auto &gstate = gstate_p.Cast<TableInOutGlobalState>();
 	auto &state = state_p.Cast<TableInOutLocalState>();
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
-	auto &bind = bind_data->Cast<TableFunctionData>();
-	state.ordinality_data.with_ordinality = bind.with_ordinality;
-	state.ordinality_data.column_id = bind.original_ordinality_id;
+	state.ordinality_data.with_ordinality = bind_data->with_ordinality;
+	state.ordinality_data.column_id = bind_data->original_ordinality_id;
 	if (projected_input.empty()) {
 		// straightforward case - no need to project input
 		OperatorResultType result = function.in_out_function(context, data, input, chunk);
